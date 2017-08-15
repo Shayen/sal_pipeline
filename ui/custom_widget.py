@@ -71,7 +71,7 @@ class customWidgetFileExplorer( QtGui.QWidget ):
 		# self.pixmap_Placeholder.setText(QtGui.QApplication.translate("widget", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
 		self.label_Filename.setText(QtGui.QApplication.translate("widget", "File name :", None, QtGui.QApplication.UnicodeUTF8))
 		self.fileName.setText(QtGui.QApplication.translate("widget", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
-		self.label_datemod.setText(QtGui.QApplication.translate("widget", "Date modified :", None, QtGui.QApplication.UnicodeUTF8))
+		self.label_datemod.setText(QtGui.QApplication.translate("widget", "Last Update :", None, QtGui.QApplication.UnicodeUTF8))
 		self.DateMod.setText(QtGui.QApplication.translate("widget", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
 		self.label_comment.setText(QtGui.QApplication.translate("widget", "Comment :", None, QtGui.QApplication.UnicodeUTF8))
 		self.comment.setText(QtGui.QApplication.translate("widget", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))

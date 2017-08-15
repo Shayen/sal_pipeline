@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>993</width>
-    <height>618</height>
+    <width>995</width>
+    <height>621</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,7 @@
    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
     <item>
      <widget class="QGroupBox" name="">
-      <layout class="QFormLayout" name="formLayout_path">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-       </property>
+      <layout class="QGridLayout" name="gridLayout" columnstretch="0,2,0">
        <item row="0" column="0">
         <widget class="QLabel" name="label_currentpath">
          <property name="text">
@@ -41,11 +38,18 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_openExplorer">
+         <property name="text">
+          <string>Open in explorer</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_Main">
+     <layout class="QHBoxLayout" name="horizontalLayout_Main" stretch="0,2,0">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_Left">
         <item>
@@ -367,7 +371,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>993</width>
+     <width>995</width>
      <height>21</height>
     </rect>
    </property>

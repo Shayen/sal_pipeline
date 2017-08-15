@@ -2,6 +2,7 @@ import maya.cmds as cmds
 import maya.OpenMayaUI as apiUI
 import shiboken
 
+from functools import partial
 import PySide.QtCore as QtCore
 import PySide.QtGui	 as QtGui
 import PySide.QtUiTools as QtUiTools
@@ -41,6 +42,18 @@ def clickable(widget):
 	filter = Filter(widget)
 	widget.installEventFilter(filter)
 	return filter.clicked
+
+def objString(string):
+
+	class objectString(object):
+		def __init__(self, *args):
+			self.text = args[0]
+
+		def getString(self):
+			return self.text
+
+	data = objectString( string )
+	return data
 
 class salProjectExplorer( QtGui.QMainWindow ):
 	"""A bare minimum UI class - showing a .ui file inside Maya 2016"""
@@ -82,6 +95,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		self.ui.addSequence_pushButton.clicked.connect(self.addSequence_pushButton_onClick)
 		self.ui.addAsset_pushButton.clicked.connect(self.addAsset_pushButton_onClick)
 		self.ui.addTask_pushButton.clicked.connect(self.addTask_pushButton_onClick)
+		self.ui.pushButton_open.clicked.connect(self.pushButton_open_onClick)
 
 		# Make QLabel object cliackable.
 		clickable(self.ui.label_path_editable).connect( self.label_path_editable_onClick )
@@ -92,6 +106,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		self.ui.listWidget_task.itemClicked.connect(self.listWidget_task_itemSelectionChanged)
 		self.ui.tabWidget.currentChanged.connect(self.tabWidget_currentChanged)
 		self.ui.listWidget_object_center.itemClicked.connect(self.listWidget_object_center_itemClicked)
+		self.ui.listWidget_version.itemClicked.connect(self.listWidget_version_itemClicked)
 
 	def refresh(self,section):
 		''' 
@@ -266,7 +281,33 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				pass
 
 			else :
-				pass
+
+				currentSequence = self.ui.listWidget_sequence.currentItem()
+				currentShot		= self.ui.listWidget_object_center.currentItem()
+				currentTask		= self.ui.listWidget_task.currentItem()
+
+				if not currentSequence or not currentShot or not currentTask:
+					return
+
+				currentSequence = currentSequence.text()
+				shotName 		= self.ui.listWidget_object_center.itemWidget( currentShot ).filename(True)
+				currentTask 	= currentTask.text()
+
+				path = '%s/%s/%s/%s/%s'%(getInfo.filmPath,currentSequence,shotName,'scenes',currentTask)
+
+				print path
+				if not os.path.exists(path):
+					print ('Path not exists.')
+					return
+
+				# list all dir, ignore 'edits' folder
+				dirList = [i for i in os.listdir(path) if i != 'edits']
+
+				for i in dirList:
+					item = QtGui.QListWidgetItem(i)
+					# item.setText(i)
+					item.setData(QtCore.Qt.UserRole, objString(path+'/'+i))
+					self.ui.listWidget_version.addItem(item)
 
 			result = True
 
@@ -289,8 +330,10 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 	def listWidget_sequence_itemSelectionChanged(self):
 		currentItem = self.ui.listWidget_sequence.currentItem().text()
-		path = self.refresh('task_list')
+		self.refresh('task_list')
 		self.refresh('center')
+
+		path = "%s/%s"%(getInfo.filmPath, currentItem)
 
 		# Update current path
 		self.ui.label_path_editable.setText( path )
@@ -307,7 +350,11 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 		else: 
 			sequenceItem = self.ui.listWidget_sequence.currentItem().text()
-			path =  getInfo.filmPath + '/' +  sequenceItem + '/scenes/' + currentItem
+			currentShot	= self.ui.listWidget_object_center.currentItem()
+			shotName 	= self.ui.listWidget_object_center.itemWidget( currentShot ).filename(True)			
+
+			# path =  getInfo.filmPath + '/' +  sequenceItem + shotName + '/scenes/' + currentItem
+			path = "%s/%s/%s/scenes/%s"%( getInfo.filmPath, sequenceItem, shotName, currentItem )
 
 			self.refresh(section = 'version')
 
@@ -316,6 +363,48 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		self.ui.label_path_editable.setText( path )
 
 	def listWidget_object_center_itemClicked(self):
+		self.refresh('task_list')
+
+	def listWidget_version_itemClicked(self):
+
+		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+		
+		# When working on assets
+		if tabText == 'assets':
+
+			currentSubType = self.ui.listWidget_asset.currentItem()
+			currentAssets  = self.ui.listWidget_object_center.currentItem()
+
+			if not sequence or not currentAssets :
+				return
+
+			else:
+				currentSubType = sequcurrentSubTypeence.text()
+				currentAssets  = currentAssets.text()
+
+
+			# path = getInfo.assetPath + '/' + currentSubType + '/' + currentAssets + '/scenes/' + result
+			# path = '%s/%s/%s/scenes/%s'%( assetPath, currentSubType, currentAssets, result )
+
+
+
+		# When working on shot		
+		else:
+
+			sequence 	= self.ui.listWidget_sequence.currentItem()
+			currentShot	= self.ui.listWidget_object_center.currentItem()
+			shotName 	= self.ui.listWidget_object_center.itemWidget( currentShot ).filename(True)
+
+			if not sequence or not currentShot:
+				return
+			else:
+				sequence = sequence.text()
+			
+
+			# path = getInfo.filmPath + '/' + sequence + '/' + shotName + '/scenes/' + result
+
+
+
 		self.refresh('task_list')
 
 	def tabWidget_currentChanged(self):
@@ -357,8 +446,14 @@ class salProjectExplorer( QtGui.QMainWindow ):
 	def addAsset_pushButton_onClick(self):
 		self.refresh('asset_list')
 
+	def pushButton_open_onClick(self):
+		data = self.ui.listWidget_version.currentItem().data( QtCore.Qt.UserRole ).getString()
+		print data
+
+		print os.path.exists(data)
+
 	def label_path_editable_onClick(self):
-		print '-'
+		print self.ui.label_path_editable.text()
 
 	def addTask_pushButton_onClick(self):
 		'''
