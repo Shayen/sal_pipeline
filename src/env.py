@@ -1,4 +1,6 @@
 import os, sys, json
+import maya.cmds as cmds
+import maya.mel as mel
 
 modulePath = '/'.join( os.path.dirname( os.path.abspath(__file__) ).split('\\')[:-1] )
 
@@ -39,7 +41,9 @@ class getEnv(object):
 class getInfo(object):
 
 	def __init__(self):
+
 		self.env = getEnv()
+		self.path = cmds.file( q=True, sn=True )
 
 		self._configureFilePath_ = self.env.data_dirPath() + '/configure.json'
 		self.configureData = self.get_ConfigureData() 
@@ -48,16 +52,25 @@ class getInfo(object):
 		self.projectPath = self.configureData['setting']['project_path']
 		self.projectName = os.path.basename( self.projectPath )
 		self.projectCode = self.configureData['setting']['project_code']
+		self.filename 	 = cmds.file( q=True, sn=True, shn=True )
 
 		self.productionPath = self.projectPath + '/production'
 		self.assetPath	= self.productionPath + '/assets' 
 		self.filmPath	= self.productionPath + '/film' 
 
-		# Set with sunction 'set_projectConfigFilePath'
+		# Set with function 'set_projectConfigFilePath'
 		self.projectConfigFilePath = ''
 
 		self.asset 	= 'assets'
 		self.shot 	= 'shot'
+
+		self.splitPath_data = self.splitPath()
+		
+
+	def splitPath (self):
+		data = self.path.replace( self.projectPath+'/', '' ).split('/')
+
+		return data
 
 	def get_ConfigureData(self):
 		''' read and get Json data from './configure.json' '''
@@ -85,9 +98,138 @@ class getInfo(object):
 		self.projectConfigFilePath = filepath
 		return filepath
 
+	def get_ProjectPath(self):
+		return self.projectPath
+
+	def get_ProjectName(self):
+		return self.projectName
 
 	def get_projectCode(self):
-		pass
+		return self.projectCode
+
+	def get_path(self):
+		''' 
+			Return full path of file
+		'''
+		return self.path
+
+	def get_workspace(self):
+		'''
+			return working folder that constrain workspace.mel
+		'''
+		path = '/'.join( self.path.split('/')[:-3] )
+
+		return path
+
+	def isType(self):
+		'''
+			return type of scene : assets / shot
+		'''
+
+		myType = self.path.replace( self.projectPath+'/', '' ).split('/')[1]
+
+		if myType == 'film':
+			myType = 'shot'
+		return myType
+
+	def get_fileName(self, ext=True):
+		'''
+			return : ppl_sq10_sh100_lighting_v003_nook.ma
+		'''
+
+		if not ext :
+			base = os.path.basename( self.filename )
+			filename = os.path.splitext( base )[0]
+			return filename
+		else:
+			return self.filename
+
+	def get_task(self):
+		task = self.splitPath_data[-2]
+		return task
+
+	def get_version(self):
+		version = self.filename.split('_')[-2]
+		version = int ( version.replace('v','') )
+		return version
+
+	def get_lastFileVersion(self):
+		''' description '''
+		if self.type == self.shot:
+			path = '%s/%s/%s/%s/%s/%s/%s'%(	self.projectPath 	, 
+											'production'		, 
+											'film'				, 
+											self.get_sequence()	, 
+											self.get_shot()		, 
+											'scenes'			, 
+											self.get_task() 
+											)
+
+			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+			return allfile[-1]
+
+		elif self.type == self.asset:
+			pass
+
+		else:
+			cmds.error('Type not match : ' + self.type)
+
+	def get_nextVersion(self, filename=False):
+
+		lastfilename = self.get_lastFileVersion()
+		version = lastfilename.split('_')[-2]
+		version = int ( version.replace('v','') )
+		result 	=  version + 1
+
+		if filename :
+			version = 'v%03d'%(result)
+			result = '_'.join( [ self.projectCode, self.get_sequence(), self.get_shot(), self.get_task(), version, self.get_user()+'.ma' ] )
+
+		return result
+
+	def get_user(self):
+		user = self.user
+		return user
+		
+	def get_name(self):
+		'''
+			return name of asset / shot
+		'''
+
+		sub_path = self.splitPath_data
+
+		if self.type == self.asset :
+			name = sub_path[3]
+
+		elif self.type == self.shot :
+			name = sub_path[3]
+
+		else:
+			cmds.error('type not found : ' + self.type)
+
+		return name
+
+	def get_sequence(self):
+		'''
+			return : sq10
+		'''
+		if self.type == self.shot:
+			return self.splitPath_data[2]
+
+		else:
+			cmds.warning('type is not shot : ' + self.type)
+			return False
+
+	def get_shot(self):
+		'''
+			return : sh100
+		'''
+		if self.type == self.shot:
+			return self.splitPath_data[3]
+
+		else:
+			cmds.warning('type is not shot : ' + self.type)
+			return False
 
 
 if __name__ == '__main__':
@@ -95,4 +237,56 @@ if __name__ == '__main__':
 	# print app.modulePath()
 
 	app = getInfo()
-	print app.projectName
+
+	# [u'production', u'film', u'sq10', u'sh100', u'scenes', u'lighting', u'ppl_sq10_sh100_lighting_v003_nook.ma']
+	print app.splitPath()
+
+	# D:/WORK/Pipeline_projectSetup
+	print app.get_ProjectPath()
+
+	# Pipeline_projectSetup
+	print app.get_ProjectName()
+
+	# ppl
+	print app.get_projectCode()
+
+	# shot
+	print app.isType()
+
+	# sh100
+	print app.get_name()
+
+	# sq10
+	print app.get_sequence()
+
+	# sh100
+	print app.get_shot()
+
+	# ppl_sq10_sh100_lighting_v003_nook.ma
+	print app.get_fileName()
+
+	# ppl_sq10_sh100_lighting_v003_nook
+	print app.get_fileName(ext=False)
+
+	# lighting
+	print app.get_task()
+
+	# 3 : int
+	print app.get_version()
+
+	# 4 : int
+	print app.get_nextVersion()
+
+	# ppl_sq10_sh100_lighting_v004_nook.ma
+	print app.get_nextVersion(filename =True)
+
+	# ppl_sq10_sh100_lighting_v003_nook.ma
+	print app.get_lastFileVersion()
+
+
+
+
+
+# D:/WORK/Pipeline_projectSetup
+# Pipeline_projectSetup
+# ppl

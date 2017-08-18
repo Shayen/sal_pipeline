@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
     <item>
-     <widget class="QGroupBox" name="">
+     <widget class="QGroupBox" name="groupBox">
       <layout class="QGridLayout" name="gridLayout" columnstretch="0,2,0">
        <item row="0" column="0">
         <widget class="QLabel" name="label_currentpath">
@@ -75,7 +75,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_assets">
            <attribute name="title">
