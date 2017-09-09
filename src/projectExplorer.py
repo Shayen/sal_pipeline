@@ -130,7 +130,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 			result = True
 
-		# Update task_list
+		# // Update task_list
 		elif section == 'task_list':
 
 			#
@@ -138,7 +138,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 			tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
 			
-			# tab is assets
+			#  // tab is assets
 			if tabText == 'assets':
 
 				self.ui.groupBox_task.setTitle('Task')
@@ -155,8 +155,6 @@ class salProjectExplorer( QtGui.QMainWindow ):
 					filename_ma   	  = filename_ma.filename(True)
 
 
-				# print help(item)
-				# print currentAssetsItem
 				path =  getInfo.productionPath + '/' + tabText + '/' + currentItem + '/' + filename_ma + '/' + 'scenes'
 
 				if not os.path.exists(path):
@@ -166,14 +164,12 @@ class salProjectExplorer( QtGui.QMainWindow ):
 					self.ui.listWidget_task.addItem(i)
 				result = filename_ma
 
-			# tab is shots
+			# // tab is shots
 			else :
 
-				# self.ui.groupBox_task.setTitle('Shots')
 
 				if not self.ui.listWidget_sequence.currentItem() or not self.ui.listWidget_object_center.currentItem():
 					return
-					#listWidget_object_center
 
 				currentSequence = self.ui.listWidget_sequence.currentItem().text()
 				currentShot		= self.ui.listWidget_object_center.currentItem()
@@ -185,7 +181,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				shotName 		= self.ui.listWidget_object_center.itemWidget( currentShot ).filename(True)
 				path 			= '%s/%s/%s/%s'%(getInfo.filmPath,currentSequence,shotName,'scenes')
 
-				# list all dir, ignore 'edits' folder
+				# // list all dir, ignore 'edits' folder
 				dirList = [i for i in os.listdir(path) if i != 'edits']
 
 				print '>',
@@ -202,7 +198,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 			self.ui.listWidget_task.setCurrentRow(0)
 
-		# Update asset_list
+		# // Update asset_list
 		elif section == 'asset_list':
 
 			#
@@ -214,7 +210,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 			result = True
 
-		# Update sequence_list
+		# // Update sequence_list
 		elif section == 'sequence_list':
 
 			#
@@ -226,7 +222,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 			result = True
 
-		# Update center list widget
+		# // Update center list widget
 		elif section == 'center':
 			
 			self.ui.listWidget_object_center.clear()
@@ -535,7 +531,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 		if os.path.exists(filePath) :
 
-			# When file have some change
+			# // When file have some change
 			if cmds.file(q=True, modified=True) :
 
 				result =cmds.confirmDialog(	title 		=  'Save file',
@@ -677,15 +673,17 @@ class salProjectExplorer( QtGui.QMainWindow ):
 			# Save new version
 			cmds.file( rename='%s/%s'%( currentPath, filename ) )
 			result =  cmds.file( save=True, type='mayaAscii' )
-			mel.eval( 'setProject "'+ getInfo.get_workspace() +'";')
+			workspace = getInfo.get_workspace()
+			print ('setup workspace : ' + workspace)
+			mel.eval( 'setProject "'+ workspace +'";')
 
 		except Exception as e:
 			raise (e)
 
-		# return result
+		# // return result
 
 		if result :
-			self.refresh('version')
+			refresh_result = self.refresh('version')
 			print result
 
 	def addTask_pushButton_onClick(self):
