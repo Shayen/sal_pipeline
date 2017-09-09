@@ -68,6 +68,8 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		''' init '''
 		QtGui.QMainWindow.__init__(self, parent)
 
+		print("##### Project Explorer : Start #####")
+
 		self._uiFilename_ = 'projectExplorer.ui'
 		self._uiFilePath_ = modulepath + '/ui/' + self._uiFilename_
 
