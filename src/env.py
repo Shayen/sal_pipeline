@@ -1,4 +1,4 @@
-import os, sys, json
+import os, sys, json, socket
 import maya.cmds as cmds
 import maya.mel as mel
 
@@ -10,6 +10,7 @@ class getEnv(object):
 		self._modulePath_ = modulePath
 		self.shotTemplateFileName = 'shot_template.zip'
 		self.projectTemplateFileName = 'projectSetup_template.zip'
+		self.assetTemplateFileName = 'asset_template.zip'
 
 	def modulePath(self):
 		""" 
@@ -38,6 +39,9 @@ class getEnv(object):
 	def projectTemplate_zipPath(self):
 		return self.data_dirPath() + '/' + self.projectTemplateFileName
 
+	def assetTemplate_zipPath(self):
+		return self.data_dirPath() + '/' + self.projectTemplateFileName
+
 class getInfo(object):
 
 	def __init__(self):
@@ -48,7 +52,7 @@ class getInfo(object):
 		self._configureFilePath_ = self.env.data_dirPath() + '/configure.json'
 		self.configureData = self.get_ConfigureData() 
 
-		self.user = self.configureData['setting']['username']
+		self.user = self.getUsername()
 		self.projectPath = self.configureData['setting']['project_path']
 		self.projectName = os.path.basename( self.projectPath )
 		self.projectCode = self.configureData['setting']['project_code']
@@ -58,14 +62,33 @@ class getInfo(object):
 		self.assetPath	= self.productionPath + '/assets' 
 		self.filmPath	= self.productionPath + '/film' 
 
-		# Set with function 'set_projectConfigFilePath'
+		# // Will set in function 'set_projectConfigFilePath'
 		self.projectConfigFilePath = ''
 
+		# self.type = self.isType()
 		self.asset 	= 'assets'
 		self.shot 	= 'shot'
 
 		self.splitPath_data = self.splitPath()
+
+	def getUsername(self):
+		'''
+			setup username
+			> Query computername to compare with config file
+		'''
+
+		# // Get computername
+		computerName = socket.gethostname()
+
+		# // compare with configuration file
+		if computerName in self.configureData['username'].keys():
+			username = self.configureData['username'][computerName]
+
+		# // if not math any name.
+		else :
+			username = 'Guest'
 		
+		return username
 
 	def splitPath (self):
 		data = self.path.replace( self.projectPath+'/', '' ).split('/')
@@ -130,6 +153,8 @@ class getInfo(object):
 
 		if myType == 'film':
 			myType = 'shot'
+
+		self.type = myType
 		return myType
 
 	def get_fileName(self, ext=True):
@@ -231,57 +256,121 @@ class getInfo(object):
 			cmds.warning('type is not shot : ' + self.type)
 			return False
 
+def showEnvVar():
+	'''
+		Print all var
+	'''
+
+	myEnv = getEnv()
+	myInfo = getInfo()
+
+	print('========== getInfo ==========')
+
+	print('get_workspace : ' + str(myInfo.get_workspace()))
+
+	# [u'production', u'film', u'sq10', u'sh100', u'scenes', u'lighting', u'ppl_sq10_sh100_lighting_v003_nook.ma']
+	print ('splitPath : ' + str(myInfo.splitPath()))
+
+	# D:/WORK/Pipeline_projectSetup
+	print ('get_ProjectPath : ' + str(myInfo.get_ProjectPath()))
+
+	# Pipeline_projectSetup
+	print ('get_ProjectName : ' + str(myInfo.get_ProjectName()))
+
+	# ppl
+	print ('get_projectCode : ' + str(myInfo.get_projectCode()))
+
+	# shot
+	print ('isType : ' + str(myInfo.isType()))
+
+	# sh100
+	print ('get_name : ' + str(myInfo.get_name()))
+
+	# sq10
+	print ('get_sequence : ' + str(myInfo.get_sequence()))
+
+	# sh100
+	print ('get_shot : ' + str(myInfo.get_shot()))
+
+	# ppl_sq10_sh100_lighting_v003_nook.ma
+	print ('get_fileName : ' + str(myInfo.get_fileName()))
+
+	# ppl_sq10_sh100_lighting_v003_nook
+	print ('get_fileName(ext=False) : ' + str(myInfo.get_fileName(ext=False)))
+
+	# lighting
+	print ('get_task : ' + str(myInfo.get_task()))
+
+	# 3 : int
+	print ('get_version : ' + str(myInfo.get_version()))
+
+	# 4 : int
+	print ('get_nextVersion : ' + str(myInfo.get_nextVersion()))
+
+	# ppl_sq10_sh100_lighting_v004_nook.ma
+	print ('get_nextVersion(filename =True) : ' + str(myInfo.get_nextVersion(filename =True)))
+
+	# ppl_sq10_sh100_lighting_v003_nook.ma
+	print ('get_lastFileVersion : ' + str(myInfo.get_lastFileVersion()))
+
 
 if __name__ == '__main__':
-	# app = getEnv()
-	# print app.modulePath()
+	modulePath = 'P:/_studioTool/sal_pipeline'
+
+	app = getEnv()
+	print modulePath
+
 
 	app = getInfo()
 
-	# [u'production', u'film', u'sq10', u'sh100', u'scenes', u'lighting', u'ppl_sq10_sh100_lighting_v003_nook.ma']
-	print app.splitPath()
+	showEnvVar()
 
-	# D:/WORK/Pipeline_projectSetup
-	print app.get_ProjectPath()
+	# app.showEnvVar()
 
-	# Pipeline_projectSetup
-	print app.get_ProjectName()
+# # [u'production', u'film', u'sq10', u'sh100', u'scenes', u'lighting', u'ppl_sq10_sh100_lighting_v003_nook.ma']
+# print app.splitPath()
 
-	# ppl
-	print app.get_projectCode()
+# # D:/WORK/Pipeline_projectSetup
+# print app.get_ProjectPath()
 
-	# shot
-	print app.isType()
+# # Pipeline_projectSetup
+# print app.get_ProjectName()
 
-	# sh100
-	print app.get_name()
+# # ppl
+# print app.get_projectCode()
 
-	# sq10
-	print app.get_sequence()
+# # shot
+# print app.isType()
 
-	# sh100
-	print app.get_shot()
+# # sh100
+# print app.get_name()
 
-	# ppl_sq10_sh100_lighting_v003_nook.ma
-	print app.get_fileName()
+# # sq10
+# print app.get_sequence()
 
-	# ppl_sq10_sh100_lighting_v003_nook
-	print app.get_fileName(ext=False)
+# # sh100
+# print app.get_shot()
 
-	# lighting
-	print app.get_task()
+# # ppl_sq10_sh100_lighting_v003_nook.ma
+# print app.get_fileName()
 
-	# 3 : int
-	print app.get_version()
+# # ppl_sq10_sh100_lighting_v003_nook
+# print app.get_fileName(ext=False)
 
-	# 4 : int
-	print app.get_nextVersion()
+# # lighting
+# print app.get_task()
 
-	# ppl_sq10_sh100_lighting_v004_nook.ma
-	print app.get_nextVersion(filename =True)
+# # 3 : int
+# print app.get_version()
 
-	# ppl_sq10_sh100_lighting_v003_nook.ma
-	print app.get_lastFileVersion()
+# # 4 : int
+# print app.get_nextVersion()
+
+# # ppl_sq10_sh100_lighting_v004_nook.ma
+# print app.get_nextVersion(filename =True)
+
+# # ppl_sq10_sh100_lighting_v003_nook.ma
+# print app.get_lastFileVersion()
 
 
 

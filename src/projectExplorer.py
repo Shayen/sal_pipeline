@@ -104,6 +104,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		self.ui.pushButton_open.clicked.connect(self.pushButton_open_onClick)
 		self.ui.pushButton_openExplorer.clicked.connect(self.openExplorer_onclick )
 		self.ui.pushButton_saveIncrement.clicked.connect(self.pushButton_saveIncrement_onclick)
+		self.ui.pushButton_addnewCentralItem.clicked.connect(self.pushButton_addnewCentralItem_onClick)
 
 		# Make QLabel object cliackable.
 		clickable(self.ui.label_path_editable).connect( self.openExplorer_onclick )
@@ -158,6 +159,9 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				# print currentAssetsItem
 				path =  getInfo.productionPath + '/' + tabText + '/' + currentItem + '/' + filename_ma + '/' + 'scenes'
 
+				if not os.path.exists(path):
+					return
+
 				for i in os.listdir(path):
 					self.ui.listWidget_task.addItem(i)
 				result = filename_ma
@@ -173,8 +177,13 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 				currentSequence = self.ui.listWidget_sequence.currentItem().text()
 				currentShot		= self.ui.listWidget_object_center.currentItem()
-				shotName = self.ui.listWidget_object_center.itemWidget( currentShot ).filename(True)
-				path = '%s/%s/%s/%s'%(getInfo.filmPath,currentSequence,shotName,'scenes')
+
+				if not currentShot :
+					print ('return.')
+					return
+
+				shotName 		= self.ui.listWidget_object_center.itemWidget( currentShot ).filename(True)
+				path 			= '%s/%s/%s/%s'%(getInfo.filmPath,currentSequence,shotName,'scenes')
 
 				# list all dir, ignore 'edits' folder
 				dirList = [i for i in os.listdir(path) if i != 'edits']
@@ -233,9 +242,15 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				else :
 					currentAssetsItem = currentAssetsItem.text()
 
-				for mytype in os.listdir( getInfo.assetPath + '/' + currentAssetsItem ):
+				path =  getInfo.assetPath + '/' + currentAssetsItem
+				for mytype in os.listdir( path ):
 
-					thumbnail_path = "C:/Users/siras/Pictures/14936969_1362716400413980_313115908_n.jpg" 
+					workspace = '%s/%s'%( path, mytype) 
+					# thumbnail_path = "C:/Users/siras/Pictures/14936969_1362716400413980_313115908_n.jpg"
+					thumbnail_path = workspace + '/thumbnail.jpg'
+					if not os.path.exists( thumbnail_path ) :
+						thumbnail_path = getInfo.get_ProjectPath() + '/thumbnail_miss.jpg'
+
 					item = QtGui.QListWidgetItem(self.ui.listWidget_object_center)
 					brush = QtGui.QBrush(QtGui.QColor(16, 65, 53))
 					brush.setStyle(QtCore.Qt.SolidPattern)	
@@ -266,7 +281,12 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 				for mytype in os.listdir( path ):
 
-					thumbnail_path = "C:/Users/siras/Pictures/14936969_1362716400413980_313115908_n.jpg" 
+					workspace = '%s/%s'%( path, mytype) 
+					# thumbnail_path = "C:/Users/siras/Pictures/14936969_1362716400413980_313115908_n.jpg"
+					thumbnail_path = workspace + '/thumbnail.jpg'
+					if not os.path.exists( thumbnail_path ) :
+						thumbnail_path = getInfo.get_ProjectPath() + '/thumbnail_miss.jpg'
+
 					item = QtGui.QListWidgetItem(self.ui.listWidget_object_center)
 					brush = QtGui.QBrush(QtGui.QColor(16, 65, 53))
 					brush.setStyle(QtCore.Qt.SolidPattern)	
@@ -372,8 +392,9 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 	def listWidget_sequence_itemSelectionChanged(self):
 		currentItem = self.ui.listWidget_sequence.currentItem().text()
-		self.refresh('task_list')
+		
 		self.refresh('center')
+		self.refresh('task_list')
 
 		path = "%s/%s"%(getInfo.filmPath, currentItem)
 
@@ -385,6 +406,10 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 		currentItem = self.ui.listWidget_task.currentItem().text()
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+
+		if not self.ui.listWidget_object_center.currentItem() :
+			self.ui.listWidget_task.clear()
+			return
 
 		# Tab is Assets
 		if tabText == 'assets':
@@ -405,7 +430,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		self.refresh(section = 'version')
 
 		# print path
-		# Update current path
+		# // Update current path
 		self.ui.label_path_editable.setText( path )
 
 	def listWidget_object_center_itemClicked(self):
@@ -534,7 +559,9 @@ class salProjectExplorer( QtGui.QMainWindow ):
 			print ('Opening file : ' + filePath)
 			try:
 				cmds.file(filePath, o=True)
-				mel.eval( 'setProject "'+ getInfo.get_workspace() +'";')
+				workspace = getInfo.get_workspace()
+				print ('setup workspace : ' + workspace)
+				mel.eval( 'setProject "'+ workspace +'";')
 
 			except Exception as e:
 				raise e
@@ -663,10 +690,8 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 	def addTask_pushButton_onClick(self):
 		'''
-			- Create new shot in shots mode
-			- Create new task in assets mode
+			add task in scene' folder
 		'''
-
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
 		
 		# When working on assets
@@ -675,7 +700,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 			currentSubType = self.ui.listWidget_asset.currentItem()
 			currentAssets  = self.ui.listWidget_object_center.currentItem()
 
-			if not sequence or not currentAssets :
+			if not currentSubType or not currentAssets :
 				return
 
 			else:
@@ -698,18 +723,22 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				if result == False :
 					return
 				else :
-					path = getInfo.filmPath + '/' + sequence + '/' + result
+					path = '%s/%s/%s/scenes/%s'%( assetPath, currentSubType, currentAssets, result )
 
 			try:
 				# Description
 				os.mkdir(path)
-
-				# Description
-				utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
-				print('Create new sequence success : ' + path)
+				self.refresh('task')
 
 			except Exception as e:
 				raise(e)
+
+			# 	# Description
+			# 	utils.utils().unzip(zipPath = getEnv.assetTemplate_zipPath() ,dest = path)
+			# 	print('Create new sequence success : ' + path)
+
+			# except Exception as e:
+			# 	raise(e)
 
 		# When working on shot		
 		else:
@@ -744,6 +773,109 @@ class salProjectExplorer( QtGui.QMainWindow ):
 			try:
 				# Description
 				os.mkdir(path)
+				self.refresh('task')
+			except Exception as e:
+				raise(e)
+
+			# 	# Description
+			# 	utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
+			# 	print('Create new sequence success : ' + path)
+
+			# except Exception as e:
+			# 	raise(e)
+
+		self.refresh('center')
+
+	def pushButton_addnewCentralItem_onClick(self):
+		'''
+			- Create new shot in shots mode
+			- Create new task in assets mode
+		'''
+
+		print ('Onclicked')
+		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+		
+		# When working on assets
+		if tabText == 'assets':
+
+			print ('tabText : ' + tabText)
+
+			currentSubType = self.ui.listWidget_asset.currentItem()
+			currentAssets  = self.ui.listWidget_object_center.currentItem()
+
+			if not currentSubType or not currentAssets :
+				print ('Retuen.')
+				return
+
+			else:
+				currentSubType = sequcurrentSubTypeence.text()
+				currentAssets  = currentAssets.text()
+
+			# Description
+			result = utils.windows().inputDialog(parent = self, title='new task', message = 'Task name...')
+			
+			if result == False :
+				return
+
+			# path = getInfo.assetPath + '/' + currentSubType + '/' + currentAssets + '/scenes/' + result
+			path = '%s/%s/%s/scenes/%s'%( assetPath, currentSubType, currentAssets, result )
+
+			# when folder exists
+			while os.path.exists(path):
+				result = utils.windows().inputDialog(parent = self, title='new task', message = 'task was exist...!!!\nObject name...')
+			
+				if result == False :
+					return
+				else :
+					path = '%s/%s/%s/scenes/%s'%( assetPath, currentSubType, currentAssets, result )
+			
+			try:
+				# Description
+				os.mkdir(path)
+
+				# Description
+				utils.utils().unzip(zipPath = getEnv.assetTemplate_zipPath() ,dest = path)
+				print('Create new sequence success : ' + path)
+
+			except Exception as e:
+				raise(e)
+
+		# When working on shot		
+		else:
+
+			print ('tabText : ' + tabText)
+
+			sequence 	= self.ui.listWidget_sequence.currentItem()
+			# currentShot	= self.ui.listWidget_object_center.currentItem()
+			# shotName 	= self.ui.listWidget_object_center.itemWidget( currentShot )
+
+			if not sequence :
+				print ("return.")
+				return
+			else:
+				sequence = sequence.text()
+				# shotName = shotName.filename(True)
+
+			# Description
+			result = utils.windows().inputDialog(parent = self, title='new task', message = 'Task name...')
+			
+			if result == False or result == '' :
+				return
+
+			path = getInfo.filmPath + '/' + sequence + '/' + result
+
+			# when folder exists
+			while os.path.exists(path):
+				result = utils.windows().inputDialog(parent = self, title='new Task', message = 'Task was exist...!!!\nObject name...')
+			
+				if result == False :
+					return
+				else :
+					path = getInfo.filmPath + '/' + sequence + '/' + result
+
+			try:
+				# Description
+				os.mkdir(path)
 
 				# Description
 				utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
@@ -752,7 +884,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 			except Exception as e:
 				raise(e)
 
-		self.refresh('task_list')
+		self.refresh('center')
 
 #####################################################################
 
