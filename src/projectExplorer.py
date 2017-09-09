@@ -576,23 +576,23 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 	def pushButton_saveIncrement_onclick(self):
 
-		# When file have some change
-		if cmds.file(q=True, modified=True) :
+		# # When file have some change
+		# if cmds.file(q=True, modified=True) :
 
-			result =cmds.confirmDialog(	title 		=  'Save file',
-										message 	=  'File is unsave, Save this file?', 
-										button 		=  ['Yes','No'], 
-										defaultButton= 'Yes', 
-										cancelButton = 'No', 
-										dismissString= 'No' 
-										)
+		# 	result =cmds.confirmDialog(	title 		=  'Save file',
+		# 								message 	=  'File is unsave, Save this file?', 
+		# 								button 		=  ['Yes','No'], 
+		# 								defaultButton= 'Yes', 
+		# 								cancelButton = 'No', 
+		# 								dismissString= 'No' 
+		# 								)
 
-			# When user say 'YES' then Save file
-			if result == 'Yes':
-				cmds.SaveScene()
-			else:
-				# return False
-				pass
+		# 	# When user say 'YES' then Save file
+		# 	if result == 'Yes':
+		# 		cmds.SaveScene()
+		# 	else:
+		# 		# return False
+		# 		pass
 
 		currentPath = self.ui.label_path_editable.text()
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
@@ -914,6 +914,7 @@ def run():
 	# pass
 
 if __name__ == '__main__':
-	app = salProjectExplorer()
+	# app = salProjectExplorer()
+	run()
 	# app._uiFilePath_ = '/'.join( os.path.dirname(__file__).split('\\\\')[:-1] ) + '/ui/' + app._uiFilename_
 	
