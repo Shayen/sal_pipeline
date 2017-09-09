@@ -557,7 +557,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 			print ('Opening file : ' + filePath)
 			try:
 				cmds.file(filePath, o=True)
-				workspace = getInfo.get_workspace()
+				workspace = workspace = '/'.join( filePath.split('/')[:-3] )
 				print ('setup workspace : ' + workspace)
 				mel.eval( 'setProject "'+ workspace +'";')
 
@@ -672,12 +672,18 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				filename	= '_'.join( [ getInfo.projectCode, assetType, assetName, task, 'v001', user+'.ma' ] ) 
 
 		try:
+
 			# Save new version
 			cmds.file( rename='%s/%s'%( currentPath, filename ) )
 			result =  cmds.file( save=True, type='mayaAscii' )
-			workspace = getInfo.get_workspace()
-			print ('setup workspace : ' + workspace)
-			mel.eval( 'setProject "'+ workspace +'";')
+			workspace = '/'.join( currentPath.split('/')[:-2] )
+
+			if workspace != '':
+				print (str(workspace))
+
+				print ('setup workspace : ' + workspace)
+				cmd =  'setProject "'+ workspace +'";'
+				mel.eval( cmd )
 
 		except Exception as e:
 			raise (e)
