@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>995</width>
-    <height>621</height>
+    <width>1174</width>
+    <height>743</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -215,7 +215,7 @@
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>100</height>
+            <height>200</height>
            </size>
           </property>
           <property name="text">
@@ -248,7 +248,7 @@
            <item row="0" column="1">
             <widget class="QLabel" name="label_fileName">
              <property name="text">
-              <string>ppl_q10_sh100_v002_nook.ma</string>
+              <string>-</string>
              </property>
             </widget>
            </item>
@@ -265,7 +265,7 @@
            <item row="1" column="1">
             <widget class="QLabel" name="label_version">
              <property name="text">
-              <string>v002</string>
+              <string>-</string>
              </property>
             </widget>
            </item>
@@ -279,7 +279,7 @@
            <item row="2" column="1">
             <widget class="QLabel" name="label_modDate">
              <property name="text">
-              <string>12/8/2017 16:28 AM</string>
+              <string>-</string>
              </property>
             </widget>
            </item>
@@ -293,7 +293,7 @@
            <item row="3" column="1">
             <widget class="QLabel" name="label_aetist">
              <property name="text">
-              <string>Nook</string>
+              <string>-</string>
              </property>
             </widget>
            </item>
@@ -310,7 +310,7 @@
               <number>1</number>
              </property>
              <property name="text">
-              <string>comment ...</string>
+              <string>-</string>
              </property>
              <property name="wordWrap">
               <bool>true</bool>
@@ -336,12 +336,25 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_7">
            <item>
-            <widget class="QListWidget" name="listWidget_version"/>
+            <widget class="QListWidget" name="listWidget_version">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>200</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_openSaveButton">
              <item>
               <widget class="QPushButton" name="pushButton_open">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>35</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Open</string>
                </property>
@@ -349,6 +362,12 @@
              </item>
              <item>
               <widget class="QPushButton" name="pushButton_saveIncrement">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>35</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Save ++</string>
                </property>
@@ -371,7 +390,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>995</width>
+     <width>1174</width>
      <height>21</height>
     </rect>
    </property>

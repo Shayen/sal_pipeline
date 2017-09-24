@@ -68,6 +68,36 @@ class utils(object):
 
 		return dest
 
+	def captureViewport(self, outputdir, filename, ext = 'jpg' ):
+		"""
+			 capture viewport 2.0 DX 11 
+
+			 var : @outputdir	: Output directory
+			 	   @filename	: filename and extention
+			 	   @ext 		: default 'jpg'
+		"""
+
+		path = outputdir + '/' + filename
+
+		if not os.path.exists( outputdir) :
+			print (outputdir + ' : not found.')
+			return
+
+		import maya.OpenMaya as openMaya
+		import maya.OpenMayaUI as openMayaUI
+		view 	= openMayaUI.M3dView.active3dView()
+		width 	= view.portWidth()
+		height 	= view.portHeight()
+		image 	= openMaya.MImage()
+
+		try:
+			view.readColorBuffer(image, True)
+			image.writeToFile(path, ext)
+
+			print ('Capture success : ' + path )
+		except Exception as e:
+			print ('cannot capture')
+
 if __name__ == '__main__':
 	
 	# Test inputDialog
