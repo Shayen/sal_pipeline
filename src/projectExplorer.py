@@ -480,6 +480,17 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				return
 			else:
 				sequence = sequence.text()
+
+		# // def Info
+		tmp_Info = getInfo( path = filePath )
+
+		# // Set Info
+		self.ui.label_fileName.setText( tmp_Info.get_fileName() )
+		self.ui.label_version.setText( tmp_Info.get_version() )
+		self.ui.label_modDate.setText()
+		self.ui.label_aetist.setText()
+		self.ui.label_comment.setText()
+
 		
 
 	def tabWidget_currentChanged(self):

@@ -44,7 +44,11 @@ class getEnv(object):
 
 class getInfo(object):
 
-	def __init__(self):
+	def __init__(self,path=None):
+
+		# // When input path
+		if path:
+			self.path = path
 
 		self.env = getEnv()
 		self.path = cmds.file( q=True, sn=True )
