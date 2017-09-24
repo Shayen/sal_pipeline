@@ -1,5 +1,6 @@
 {
 	"setting": {
+<<<<<<< HEAD
 		"project_path": "P:/Vision",
 		"project_code": "vis",
 		"project_name": "Vision"
@@ -11,5 +12,16 @@
 		"MikeSethapong": "Mike",
 		"ViperElite" : "Tai",
 		"SUCKDICK" : "Win"
+=======
+		"project_path": "P:/De-mon_Fantasy_Thesis",
+		"project_code": "dmf",
+		"project_name": "De-monFantasyThesis"
+	},
+	"username" :{
+		"DESKTOP-T6KV9L3": "Nook",
+		"Space_GOLF": "Golf",
+		"DESKTOP-DETQ07K": "Top",
+		"Space_COPTER": "Copter"
+>>>>>>> dev
 	}
 }
