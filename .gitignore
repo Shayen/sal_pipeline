@@ -1,3 +1,4 @@
 *.pyc
 /log
 data/configure.json
+/data/configure.json
