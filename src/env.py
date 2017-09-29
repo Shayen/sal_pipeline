@@ -65,7 +65,6 @@ class getInfo(object):
 		self.projectPath = self.configureData['setting']['project_path']
 		self.projectName = os.path.basename( self.projectPath )
 		self.projectCode = self.configureData['setting']['project_code']
-		
 
 		self.productionPath = self.projectPath + '/production'
 		self.assetPath	= self.productionPath + '/assets' 
@@ -281,14 +280,14 @@ class getInfo(object):
 
 		# // check _thumbnail path exists
 		if not os.path.exists(thumbnail_path):
-			print (thumbnail_path + ' : not exists')
+			# print (thumbnail_path + ' : not exists')
 			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
 			return thumbnail_path
 
 		# // check number of image file
 		all_thumbnail_files = os.listdir( '%s/%s'%( workspace, '_thumbnail') )
 		if all_thumbnail_files == []:
-			print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
+			# print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
 			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
 			return thumbnail_path
 
