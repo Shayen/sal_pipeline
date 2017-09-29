@@ -6,8 +6,7 @@ if modulePath not in sys.path :
 	sys.path.append( modulePath )
 
 # from sal_pipeline.src import projectExplorer
-from sal_pipeline.src import projectExplorer
-reload(projectExplorer)
+
 
 ##################### LOGGER #####################
 # import datetime
@@ -33,7 +32,15 @@ reload(projectExplorer)
 #################################################
 
 def app_projectExplorer():
+	from sal_pipeline.app import projectExplorer
+	reload(projectExplorer)
 	projectExplorer.run()
+
+def app_assetImporter():
+	# from sal_pipeline.app import assetImporter
+	# reload(assetImporter)
+	# assetImporter.run()
+	pass
 
 if __name__ == '__main__':
 	app_projectExplorer()

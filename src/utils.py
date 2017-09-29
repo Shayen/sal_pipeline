@@ -1,8 +1,25 @@
 import maya.cmds as cmds
 
-import PySide.QtCore as QtCore
-import PySide.QtGui	 as QtGui
-import PySide.QtUiTools as QtUiTools
+# import PySide.QtCore as QtCore
+# import PySide.QtGui	 as QtGui
+# import PySide.QtUiTools as QtUiTools
+
+# import pyside
+try:
+	from PySide2 import QtCore
+	from PySide2 import QtGui
+	from PySide2 import QtWidgets
+	from PySide2 import QtUiTools
+	from PySide2 import __version__
+	import shiboken2
+
+except ImportError:
+	from PySide import QtCore
+	from PySide import QtGui
+	from PySide import QtUiTools
+	from PySide import __version__
+	import shiboken
+  
 import os, sys, zipfile
 
 from sal_pipeline.src import env
@@ -67,6 +84,36 @@ class utils(object):
 			raise(e)
 
 		return dest
+
+	def captureViewport(self, outputdir, filename, ext = 'jpg' ):
+		"""
+			 capture viewport 2.0 DX 11 
+
+			 var : @outputdir	: Output directory
+			 	   @filename	: filename and extention
+			 	   @ext 		: default 'jpg'
+		"""
+
+		path = outputdir + '/' + filename
+
+		if not os.path.exists( outputdir) :
+			print (outputdir + ' : not found.')
+			return
+
+		import maya.OpenMaya as openMaya
+		import maya.OpenMayaUI as openMayaUI
+		view 	= openMayaUI.M3dView.active3dView()
+		width 	= view.portWidth()
+		height 	= view.portHeight()
+		image 	= openMaya.MImage()
+
+		try:
+			view.readColorBuffer(image, True)
+			image.writeToFile(path, ext)
+
+			print ('Capture success : ' + path )
+		except Exception as e:
+			print ('cannot capture')
 
 if __name__ == '__main__':
 	

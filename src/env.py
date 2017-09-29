@@ -40,7 +40,7 @@ class getEnv(object):
 		return self.data_dirPath() + '/' + self.projectTemplateFileName
 
 	def assetTemplate_zipPath(self):
-		return self.data_dirPath() + '/' + self.projectTemplateFileName
+		return self.data_dirPath() + '/' + self.assetTemplateFileName
 
 class getInfo(object):
 
@@ -48,10 +48,15 @@ class getInfo(object):
 
 		# // When input path
 		if path:
-			self.path = path
+			self.path     = path
+			self.filename = path.split('/')[-1]
+			# self.user = self._getUsername_fromPath()
+		else:
+			self.path 	  = cmds.file( q=True, sn=True )
+			self.filename = cmds.file( q=True, sn=True, shn=True )
+			# self.user = self.getUsername()
 
 		self.env = getEnv()
-		self.path = cmds.file( q=True, sn=True )
 
 		self._configureFilePath_ = self.env.data_dirPath() + '/configure.json'
 		self.configureData = self.get_ConfigureData() 
@@ -60,7 +65,6 @@ class getInfo(object):
 		self.projectPath = self.configureData['setting']['project_path']
 		self.projectName = os.path.basename( self.projectPath )
 		self.projectCode = self.configureData['setting']['project_code']
-		self.filename 	 = cmds.file( q=True, sn=True, shn=True )
 
 		self.productionPath = self.projectPath + '/production'
 		self.assetPath	= self.productionPath + '/assets' 
@@ -92,6 +96,12 @@ class getInfo(object):
 		else :
 			username = 'Guest'
 		
+		return username
+
+	def _getUsername_fromPath(self):
+		""" """
+		path = self.filename
+		username = path.split('_')[-1].split('.')[0]
 		return username
 
 	def splitPath (self):
@@ -259,6 +269,46 @@ class getInfo(object):
 		else:
 			cmds.warning('type is not shot : ' + self.type)
 			return False
+
+	def getThumbnail(self, workspace, filename, perfile=False):
+		""" description """
+
+		# thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
+		# return thumbnail_path
+
+		thumbnail_path = '%s/%s'%(workspace, '_thumbnail')
+
+		# // check _thumbnail path exists
+		if not os.path.exists(thumbnail_path):
+			# print (thumbnail_path + ' : not exists')
+			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
+			return thumbnail_path
+
+		# // check number of image file
+		all_thumbnail_files = os.listdir( '%s/%s'%( workspace, '_thumbnail') )
+		if all_thumbnail_files == []:
+			# print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
+			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
+			return thumbnail_path
+
+		else:
+			if perfile:
+				if os.path.exists(thumbnail_path+'/'+filename):
+					thumbnail_path = thumbnail_path+'/'+filename
+				else:
+					thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
+					return thumbnail_path
+			else:
+				thumbnail_file = sorted( all_thumbnail_files )[-1] 
+				thumbnail_path += '/%s'%(thumbnail_file)
+
+		# print ('>> : ' + thumbnail_path)
+		if not os.path.exists( thumbnail_path ) :
+			print (thumbnail_path + ' : not exists')
+			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
+
+		return thumbnail_path
+
 
 def showEnvVar():
 	'''
