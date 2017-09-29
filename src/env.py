@@ -46,6 +46,14 @@ class getInfo(object):
 
 	def __init__(self,path=None):
 
+		# // When input path
+		if path:
+			self.path     = path
+			self.filename = path.split('/')[-1]
+			# self.user = self._getUsername_fromPath()
+		else:
+			self.path 	  = cmds.file( q=True, sn=True )
+			self.filename = cmds.file( q=True, sn=True, shn=True )
 			# self.user = self.getUsername()
 
 			self.filename = cmds.file( q=True, sn=True, shn=True )
