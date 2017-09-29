@@ -56,14 +56,6 @@ class getInfo(object):
 			self.filename = cmds.file( q=True, sn=True, shn=True )
 			# self.user = self.getUsername()
 
-			self.filename = cmds.file( q=True, sn=True, shn=True )
-			self.path 	  = cmds.file( q=True, sn=True )
-		else:
-			self.filename = path.split('/')[-1]
-			# self.user = self._getUsername_fromPath()
-			self.path     = path
-		if path:
-		# // When input path
 		self.env = getEnv()
 
 		self._configureFilePath_ = self.env.data_dirPath() + '/configure.json'
