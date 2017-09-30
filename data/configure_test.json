@@ -4,12 +4,15 @@
 			"Pipeline_Project":{
 				"project_path": "D:/WORK/Pipeline_projectSetup",
 				"project_code": "plp",
-				"project_name": "Pipeline_Project"
+				"project_name": "Pipeline_Project",
+				"active" : false
 			},
 			"Vision":{
-				"project_path": "D:/WORK/Pipeline_projectSetup",
+				"project_path": "P:/Vision",
 				"project_code": "vis",
-				"project_name": "Vision"
+				"project_name": "Vision",
+				"active" : true
+			}
 		}
 	},
 	"username" :{
