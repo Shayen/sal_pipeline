@@ -44,7 +44,12 @@ class getEnv(object):
 
 class getInfo(object):
 
-	def __init__(self,path=None):
+	def __init__(self,projectName=None,path=None):
+
+		self.env = getEnv()
+
+		self._configureFilePath_ = self.env.data_dirPath() + '/configure_test.json'
+		self.configureData = self.get_ConfigureData() 
 
 		# // When input path
 		if path:
@@ -56,15 +61,16 @@ class getInfo(object):
 			self.filename = cmds.file( q=True, sn=True, shn=True )
 			# self.user = self.getUsername()
 
-		self.env = getEnv()
-
-		self._configureFilePath_ = self.env.data_dirPath() + '/configure.json'
-		self.configureData = self.get_ConfigureData() 
+		# // when project name was set
+		if projectName:
+			self.projectName = projectName
+		else :
+			# split from file path
+			_set_projectNameFromPath()
 
 		self.user = self.getUsername()
-		self.projectPath = self.configureData['setting']['project_path']
-		self.projectName = os.path.basename( self.projectPath )
-		self.projectCode = self.configureData['setting']['project_code']
+		self.projectPath = self.configureData['setting']['projects'][projectName]['project_path']
+		self.projectCode = self.configureData['setting']['projects'][projectName]['project_code']
 
 		self.productionPath = self.projectPath + '/production'
 		self.assetPath	= self.productionPath + '/assets' 
@@ -78,6 +84,11 @@ class getInfo(object):
 		self.shot 	= 'shot'
 
 		self.splitPath_data = self.splitPath()
+
+	def _set_projectNameFromPath(self):
+		""" get full name of project"""
+		filename = self.filename
+		self.projectName = projectName
 
 	def getUsername(self):
 		'''

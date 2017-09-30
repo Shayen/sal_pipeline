@@ -31,14 +31,13 @@ reload(env)
 
 getEnv 	= env.getEnv()
 getInfo = env.getInfo()
-# print os.path.dirname( os.path.abspath(__file__) )
 modulepath = getEnv.modulePath()
 
 __version__ = 1.1
 # V1.0 : All function running well.
 # V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
 
-# make unclickable object clickable.
+# // make unclickable object clickable.
 def clickable(widget):
  
 	class Filter(QObject):
