@@ -1,7 +1,4 @@
-import maya.cmds as cmds
-import maya.mel as mel
-import maya.OpenMayaUI as apiUI
-
+import os, sys, subprocess, time, json
 from functools import partial
 
 try:
@@ -19,8 +16,6 @@ except ImportError:
 	from PySide import __version__
 	import shiboken
 
-import os, sys, subprocess, time
-
 from ...src import env
 from ...src import utils
 from ...ui  import custom_widget
@@ -29,16 +24,21 @@ reload(custom_widget)
 reload(utils)
 reload(env)
 
+import maya.cmds as cmds
+import maya.mel as mel
+import maya.OpenMayaUI as apiUI
+
 getEnv 	= env.getEnv()
-getInfo = env.getInfo()
-# print os.path.dirname( os.path.abspath(__file__) )
+
 modulepath = getEnv.modulePath()
 
-__version__ = 1.1
+__version__ = 1.2
 # V1.0 : All function running well.
 # V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
+# V1.2 : Support multi project switching
 
-# make unclickable object clickable.
+#-------------------------------------------------------
+# // make unclickable object clickable.
 def clickable(widget):
  
 	class Filter(QObject):
@@ -65,6 +65,11 @@ def openExplorer(filePath):
 	win_publishPath = filePath.replace('/', '\\')
 	subprocess.Popen('explorer \/select,\"%s\"' % win_publishPath)
 
+def listAllProject():
+	data = getEnv.globalConfig_data
+	return data['setting']['projects'].keys()
+	# getInfo = env.getInfo(projectName = "Vision")
+
 def objString(string):
 
 	class objectString(object):
@@ -77,6 +82,8 @@ def objString(string):
 	data = objectString( string )
 	return data
 
+#-------------------------------------------------------
+
 class salProjectExplorer( QMainWindow ):
 	"""A bare minimum UI class - showing a .ui file inside Maya 2016"""
 
@@ -88,6 +95,8 @@ class salProjectExplorer( QMainWindow ):
 
 		self._uiFilename_ = 'projectExplorer.ui'
 		self._uiFilePath_ = modulepath + '/ui/' + self._uiFilename_
+
+		self.projectList = []
 
 		# Check is ui file exists?
 		if not os.path.isfile( self._uiFilePath_ ):
@@ -104,9 +113,13 @@ class salProjectExplorer( QMainWindow ):
 
 		self.ui.setWindowTitle('Project Explorer v.' + str(__version__))
 
+		# setup project combobox
+		self.setup_projectCombobox()
+
 		self.initUI()
 
-		self.refresh('project')
+		self.refresh('project')		
+
 		# self.refresh('task_list')
 		self.refresh('asset_list')
 		self.refresh('sequence_list')
@@ -137,7 +150,7 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.label_currentpath.setStyleSheet("""font-weight: bold;""")
 		# self.ui.label_path_editable.setStyleSheet("""font-weight: bold;""")
 
-		self.ui.label_myAccount.setText( getInfo.user )
+		self.ui.label_myAccount.setText( getEnv.user )
 		self.ui.listWidget_object_center.setSpacing(2)
 
 		self.ui.addSequence_pushButton.clicked.connect(self.addSequence_pushButton_onClick)
@@ -151,13 +164,33 @@ class salProjectExplorer( QMainWindow ):
 		# Make QLabel object cliackable.
 		clickable(self.ui.label_path_editable).connect( self.openExplorer_onclick )
 
-		self.ui.comboBox_project.activated.connect(self.project_select)
+		self.ui.comboBox_project.currentIndexChanged.connect(self.project_select)
 		self.ui.listWidget_asset.itemSelectionChanged.connect(self.listWidget_asset_itemSelectionChanged)
 		self.ui.listWidget_sequence.itemSelectionChanged.connect(self.listWidget_sequence_itemSelectionChanged)
 		self.ui.listWidget_task.itemClicked.connect(self.listWidget_task_itemSelectionChanged)
 		self.ui.tabWidget.currentChanged.connect(self.tabWidget_currentChanged)
 		self.ui.listWidget_object_center.itemClicked.connect(self.listWidget_object_center_itemClicked)
 		self.ui.listWidget_version.itemClicked.connect(self.listWidget_version_itemClicked)
+
+	def setup_projectCombobox(self):
+		""" add list of project from config file to combobox """
+
+		global getInfo
+
+		self.ui.comboBox_project.clear()
+		self.projectList = listAllProject()
+		self.ui.comboBox_project.addItems( self.projectList )
+
+		# get active project
+		for project in getEnv.globalConfig_data['setting']['projects'].keys():
+			if getEnv.globalConfig_data['setting']['projects'][project]['active'] == True:
+				break
+
+		getInfo = env.getInfo(projectName = project)
+		activePrj = self.ui.comboBox_project.findText( project )
+		self.ui.comboBox_project.setCurrentIndex(activePrj)
+
+		result = True
 
 	def refresh(self,section):
 		''' 
@@ -167,9 +200,7 @@ class salProjectExplorer( QMainWindow ):
 		'''
 
 		if section == 'project':
-			self.ui.comboBox_project.addItem( getInfo.projectName )
-			self.ui.comboBox_project.setCurrentIndex(1)
-
+			# // list all project
 			result = True
 
 		# // Update task_list
@@ -314,13 +345,12 @@ class salProjectExplorer( QMainWindow ):
 					currentSeqItem = currentSeqItem.text()
 					path =  getInfo.filmPath + '/' +  currentSeqItem 
 
+					if not os.path.exists(path):
+						return
+
 				for mytype in os.listdir( path ):
 
 					workspace = '%s/%s'%( path, mytype) 
-					# thumbnail_path = "C:/Users/siras/Pictures/14936969_1362716400413980_313115908_n.jpg"
-					# thumbnail_path = workspace + '/thumbnail.jpg'
-					# if not os.path.exists( thumbnail_path ) :
-						# thumbnail_path = getInfo.get_ProjectPath() + '/thumbnail_miss.jpg'
 
 					thumbnail_path = getInfo.getThumbnail(workspace = workspace, filename = mytype)
 					datemodified   = time.strftime("%d/%m/%Y %H:%M %p",time.gmtime( os.path.getmtime(workspace) ))
@@ -413,8 +443,18 @@ class salProjectExplorer( QMainWindow ):
 		return result
 
 	def project_select(self):
+		""" """
+
+		global getInfo
+
 		currenttext = self.ui.comboBox_project.currentText()
-		# print currenttext
+		getInfo = env.getInfo(projectName = currenttext)
+
+		self.refresh('asset_list')
+		self.refresh('sequence_list')
+		self.refresh('version')
+
+		print ("project_select : " + currenttext)
 
 	def listWidget_asset_itemSelectionChanged(self):
 		currentItem = self.ui.listWidget_asset.currentItem().text()
@@ -495,8 +535,10 @@ class salProjectExplorer( QMainWindow ):
 
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
 		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
-		# self.ui.label_path_editable.setText( filePath )
+		currentproject = self.ui.comboBox_project.currentText()
 
+		myGetInfo = env.getInfo( projectName = currentproject, path = filePath )
+		
 		# When working on assets
 		if tabText == 'assets':
 
@@ -525,24 +567,26 @@ class salProjectExplorer( QMainWindow ):
 		# // Update information
 		# / get information
 		modDate = time.strftime("%d/%m/%Y %H:%M %p",time.gmtime( os.path.getmtime(filePath) ))
-		version = 'v%03d'%(env.getInfo(path = filePath).get_version())
-		filename= env.getInfo(path = filePath).get_fileName()
-		artist  = env.getInfo(path = filePath)._getUsername_fromPath()
+		version = 'v%03d'%(myGetInfo.get_version())
+		filename= myGetInfo.get_fileName()
+		artist  = myGetInfo._getUsername_fromPath()
 
 		# / set image
-		thumbnail_workSpace = env.getInfo(path = filePath).get_workspace()
-		thumbnail_file = env.getInfo(path = filePath).get_fileName(ext=False)+'.jpg'
-		thumbnail_path = env.getInfo(path = filePath).getThumbnail(workspace = thumbnail_workSpace, filename = thumbnail_file ,perfile=True)
+		thumbnail_workSpace = myGetInfo.get_workspace()
+		thumbnail_file 		= myGetInfo.get_fileName(ext=False)+'.jpg'
+		thumbnail_path 		= myGetInfo.getThumbnail(workspace = thumbnail_workSpace, filename = thumbnail_file ,perfile=True)
+		
 		pixmap = QPixmap(thumbnail_path)
 		pixmap = pixmap.scaledToWidth(276)
+
 		self.ui.label_ImagePlaceHolder.setPixmap(pixmap)
 
 		# / list information field
 		self.ui.label_fileName.setText( filename )
-		self.ui.label_version.setText( version )
-		self.ui.label_modDate.setText( modDate )
-		self.ui.label_aetist.setText( artist )
-		self.ui.label_comment.setText('...')
+		self.ui.label_version.setText ( version )
+		self.ui.label_modDate.setText ( modDate )
+		self.ui.label_aetist.setText  ( artist )
+		self.ui.label_comment.setText ('...')
 		
 
 	def tabWidget_currentChanged(self):
