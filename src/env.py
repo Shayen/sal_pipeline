@@ -11,6 +11,10 @@ class getEnv(object):
 		self.shotTemplateFileName = 'shot_template.zip'
 		self.projectTemplateFileName = 'projectSetup_template.zip'
 		self.assetTemplateFileName = 'asset_template.zip'
+		self.configureFileName = 'configure_test.json'
+
+		self.globalConfig_data = self._read_globalConfig()
+		self.user = self._get_Username()
 
 	def modulePath(self):
 		""" 
@@ -42,9 +46,40 @@ class getEnv(object):
 	def assetTemplate_zipPath(self):
 		return self.data_dirPath() + '/' + self.assetTemplateFileName
 
+	def configure_filePath(self):
+		return self.data_dirPath() + '/' + self.configureFileName
+
+	def _read_globalConfig(self):
+		""" read config data from './configure.json' """
+		data = json.load( open( self.configure_filePath(), 'r') )
+		return data
+
+	def _get_Username(self):
+		'''
+			setup username
+			> Query computername to compare with config file
+		'''
+
+		# // Get computername
+		computerName = socket.gethostname()
+
+		# // compare with configuration file
+		if computerName in self.globalConfig_data['username'].keys():
+			username = self.globalConfig_data['username'][computerName]
+
+		# // if not math any name.
+		else :
+			username = 'Guest'
+		
+		return username
+
 class getInfo(object):
 
-	def __init__(self,path=None):
+	def __init__(self,projectName=None,path=None):
+
+		self.env = getEnv()
+
+		self.globalConfigureData = self.env.globalConfig_data
 
 		# // When input path
 		if path:
@@ -56,16 +91,17 @@ class getInfo(object):
 			self.filename = cmds.file( q=True, sn=True, shn=True )
 			# self.user = self.getUsername()
 
-		self.env = getEnv()
+		# // when project name was set
+		if projectName:
+			self.projectName = projectName
+		else :
+			# split from file path
+			self.projectName = self._get_projectNameFromPath()
 
-		self._configureFilePath_ = self.env.data_dirPath() + '/configure.json'
-		self.configureData = self.get_ConfigureData() 
-
-		self.user = self.getUsername()
-		self.projectPath = self.configureData['setting']['project_path']
-		self.projectName = os.path.basename( self.projectPath )
-		self.projectCode = self.configureData['setting']['project_code']
+		self.user = self.env.user
 		
+		self.projectPath = self.globalConfigureData['setting']['projects'][projectName]['project_path']
+		self.projectCode = self.globalConfigureData['setting']['projects'][projectName]['project_code']
 
 		self.productionPath = self.projectPath + '/production'
 		self.assetPath	= self.productionPath + '/assets' 
@@ -80,6 +116,19 @@ class getInfo(object):
 
 		self.splitPath_data = self.splitPath()
 
+	def _get_projectNameFromPath(self):
+		""" get full name of project"""
+
+		filename 	= self.filename
+		project_code= filename.split('_')[0]
+
+		# get full project name from project code
+		for projectName in self.globalConfigureData['setting']['projects'].keys():
+			if self.globalConfigureData['setting']['projects'][projectName]['project_code'] == project_code:
+				break 
+
+		return projectName
+
 	def getUsername(self):
 		'''
 			setup username
@@ -90,8 +139,8 @@ class getInfo(object):
 		computerName = socket.gethostname()
 
 		# // compare with configuration file
-		if computerName in self.configureData['username'].keys():
-			username = self.configureData['username'][computerName]
+		if computerName in self.globalConfigureData['username'].keys():
+			username = self.globalConfigureData['username'][computerName]
 
 		# // if not math any name.
 		else :
@@ -109,14 +158,6 @@ class getInfo(object):
 		data = self.path.replace( self.projectPath+'/', '' ).split('/')
 
 		return data
-
-	def get_ConfigureData(self):
-		''' read and get Json data from './configure.json' '''
-		data = json.load( open(self._configureFilePath_,'r') )
-		return data
-
-	def get_projectConfigData(self):
-		data = json.load( open(self._configureFilePath_,'r') )
 
 	def set_projectConfigFilePath(self, projectPath):
 		''' 
@@ -168,6 +209,8 @@ class getInfo(object):
 
 		if myType == 'film':
 			myType = 'shot'
+		# else : 
+		# 	myType = 'assets'
 
 		self.type = myType
 		return myType
@@ -281,14 +324,14 @@ class getInfo(object):
 
 		# // check _thumbnail path exists
 		if not os.path.exists(thumbnail_path):
-			print (thumbnail_path + ' : not exists')
+			# print (thumbnail_path + ' : not exists')
 			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
 			return thumbnail_path
 
 		# // check number of image file
 		all_thumbnail_files = os.listdir( '%s/%s'%( workspace, '_thumbnail') )
 		if all_thumbnail_files == []:
-			print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
+			# print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
 			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
 			return thumbnail_path
 
@@ -317,7 +360,7 @@ def showEnvVar():
 	'''
 
 	myEnv = getEnv()
-	myInfo = getInfo()
+	myInfo = getInfo(projectName = "Vision", path = "P:/Vision/production/film/Anim/duo1Shot1Nal/scenes/anim/vis_Anim_duo1Shot1Nal_anim_v001_Dear.ma")
 
 	print('========== getInfo ==========')
 
@@ -370,17 +413,18 @@ def showEnvVar():
 
 
 if __name__ == '__main__':
-	modulePath = 'P:/_studioTool/sal_pipeline'
+	modulePath = 'D:/WORK/Programming/sal_pipeline'
 
-	app = getEnv()
-	print modulePath
-
-
-	app = getInfo()
+	# app = getEnv()
+	# print os.listdir(modulePath+"/data")
+	# configFile = modulePath+"/data/configure_test.json"
+	# data = json.load( open(configFile,'r') )
+	# print json.dumps(data,indent=2)
 
 	showEnvVar()
 
 	# app.showEnvVar()
+# // test path : "P:/Vision/production/film/Anim/duo1Shot1Nal/scenes/anim/vis_Anim_duo1Shot1Nal_anim_v001_Dear.ma"
 
 # # [u'production', u'film', u'sq10', u'sh100', u'scenes', u'lighting', u'ppl_sq10_sh100_lighting_v003_nook.ma']
 # print app.splitPath()

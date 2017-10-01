@@ -1,40 +1,54 @@
-import maya.cmds as cmds
-import maya.mel as mel
-import maya.OpenMayaUI as apiUI
-import shiboken
-
+import os, sys, subprocess, time, json
 from functools import partial
-import PySide.QtCore as QtCore
-import PySide.QtGui	 as QtGui
-import PySide.QtUiTools as QtUiTools
-import os, sys, subprocess, time
 
-from sal_pipeline.src import env
-from sal_pipeline.src import utils
-from sal_pipeline.ui  import custom_widget
+try:
+	from PySide2.QtCore import *
+	from PySide2.QtGui import *
+	from PySide2.QtWidgets import *
+	from PySide2.QtUiTools import *
+	from PySide2 import __version__
+	import shiboken2 as shiboken
+
+except ImportError:
+	from PySide.QtCore import *
+	from PySide.QtGui import *
+	from PySide.QtUiTools import *
+	from PySide import __version__
+	import shiboken
+
+from ...src import env
+from ...src import utils
+from ...ui  import custom_widget
+
 reload(custom_widget)
 reload(utils)
 reload(env)
 
+import maya.cmds as cmds
+import maya.mel as mel
+import maya.OpenMayaUI as apiUI
+
 getEnv 	= env.getEnv()
-getInfo = env.getInfo()
-# print os.path.dirname( os.path.abspath(__file__) )
+
 modulepath = getEnv.modulePath()
 
-__version__ = 1.0
+__version__ = 1.2
 # V1.0 : All function running well.
+# V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
+# V1.2 : Support multi project switching
 
-# make unclickable object clickable.
+#-------------------------------------------------------
+# // make unclickable object clickable.
 def clickable(widget):
  
-	class Filter(QtCore.QObject):
+	class Filter(QObject):
 	 
-		clicked = QtCore.Signal()
+		clicked = Signal()
 		 
 		def eventFilter(self, obj, event):
 		 
 			if obj == widget:
-				if event.type() == QtCore.QEvent.MouseButtonRelease:
+				if event.type() == QEvent.MouseButtonRelease:
 					if obj.rect().contains(event.pos()):
 						self.clicked.emit()
 						# The developer can opt for .emit(obj) to get the object within the slot.
@@ -51,6 +65,11 @@ def openExplorer(filePath):
 	win_publishPath = filePath.replace('/', '\\')
 	subprocess.Popen('explorer \/select,\"%s\"' % win_publishPath)
 
+def listAllProject():
+	data = getEnv.globalConfig_data
+	return data['setting']['projects'].keys()
+	# getInfo = env.getInfo(projectName = "Vision")
+
 def objString(string):
 
 	class objectString(object):
@@ -63,36 +82,44 @@ def objString(string):
 	data = objectString( string )
 	return data
 
-class salProjectExplorer( QtGui.QMainWindow ):
+#-------------------------------------------------------
+
+class salProjectExplorer( QMainWindow ):
 	"""A bare minimum UI class - showing a .ui file inside Maya 2016"""
 
 	def __init__(self,parent=None):
 		''' init '''
-		QtGui.QMainWindow.__init__(self, parent)
+		QMainWindow.__init__(self, parent)
 
 		print("##### Project Explorer : Start #####")
 
 		self._uiFilename_ = 'projectExplorer.ui'
 		self._uiFilePath_ = modulepath + '/ui/' + self._uiFilename_
 
+		self.projectList = []
+
 		# Check is ui file exists?
 		if not os.path.isfile( self._uiFilePath_ ):
 			cmds.error( 'File ui not found.' )
 
 		# ---- LoadUI -----
-		loader = QtUiTools.QUiLoader()
+		loader = QUiLoader()
 		currentDir = os.path.dirname(__file__)
-		file = QtCore.QFile( self._uiFilePath_ )
-		file.open(QtCore.QFile.ReadOnly)
+		file = QFile( self._uiFilePath_ )
+		file.open(QFile.ReadOnly)
 		self.ui = loader.load(file, parentWidget=self)
 		file.close()
 		# -----------------
 
 		self.ui.setWindowTitle('Project Explorer v.' + str(__version__))
 
+		# setup project combobox
+		self.setup_projectCombobox()
+
 		self.initUI()
 
-		self.refresh('project')
+		self.refresh('project')		
+
 		# self.refresh('task_list')
 		self.refresh('asset_list')
 		self.refresh('sequence_list')
@@ -123,7 +150,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		self.ui.label_currentpath.setStyleSheet("""font-weight: bold;""")
 		# self.ui.label_path_editable.setStyleSheet("""font-weight: bold;""")
 
-		self.ui.label_myAccount.setText( getInfo.user )
+		self.ui.label_myAccount.setText( getEnv.user )
 		self.ui.listWidget_object_center.setSpacing(2)
 
 		self.ui.addSequence_pushButton.clicked.connect(self.addSequence_pushButton_onClick)
@@ -137,13 +164,33 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		# Make QLabel object cliackable.
 		clickable(self.ui.label_path_editable).connect( self.openExplorer_onclick )
 
-		self.ui.comboBox_project.activated.connect(self.project_select)
+		self.ui.comboBox_project.currentIndexChanged.connect(self.project_select)
 		self.ui.listWidget_asset.itemSelectionChanged.connect(self.listWidget_asset_itemSelectionChanged)
 		self.ui.listWidget_sequence.itemSelectionChanged.connect(self.listWidget_sequence_itemSelectionChanged)
 		self.ui.listWidget_task.itemClicked.connect(self.listWidget_task_itemSelectionChanged)
 		self.ui.tabWidget.currentChanged.connect(self.tabWidget_currentChanged)
 		self.ui.listWidget_object_center.itemClicked.connect(self.listWidget_object_center_itemClicked)
 		self.ui.listWidget_version.itemClicked.connect(self.listWidget_version_itemClicked)
+
+	def setup_projectCombobox(self):
+		""" add list of project from config file to combobox """
+
+		global getInfo
+
+		self.ui.comboBox_project.clear()
+		self.projectList = listAllProject()
+		self.ui.comboBox_project.addItems( self.projectList )
+
+		# get active project
+		for project in getEnv.globalConfig_data['setting']['projects'].keys():
+			if getEnv.globalConfig_data['setting']['projects'][project]['active'] == True:
+				break
+
+		getInfo = env.getInfo(projectName = project)
+		activePrj = self.ui.comboBox_project.findText( project )
+		self.ui.comboBox_project.setCurrentIndex(activePrj)
+
+		result = True
 
 	def refresh(self,section):
 		''' 
@@ -153,9 +200,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		'''
 
 		if section == 'project':
-			self.ui.comboBox_project.addItem( getInfo.projectName )
-			self.ui.comboBox_project.setCurrentIndex(1)
-
+			# // list all project
 			result = True
 
 		# // Update task_list
@@ -242,7 +287,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 			self.ui.listWidget_sequence.clear()
 
 			for mytype in os.listdir( getInfo.filmPath ):
-				if os.path.isdir(getInfo.filmPath + '/' + mytype):
+				if os.path.isdir(getInfo.filmPath + '/' + mytype) :
 					self.ui.listWidget_sequence.addItem( mytype )
 
 			result = True
@@ -272,9 +317,9 @@ class salProjectExplorer( QtGui.QMainWindow ):
 					thumbnail_path = getInfo.getThumbnail(workspace = workspace, filename = mytype)
 					datemodified   = time.strftime("%d/%m/%Y %H:%M %p",time.gmtime( os.path.getmtime(workspace) ))
 
-					item = QtGui.QListWidgetItem(self.ui.listWidget_object_center)
-					brush = QtGui.QBrush(QtGui.QColor(16, 65, 53))
-					brush.setStyle(QtCore.Qt.SolidPattern)	
+					item = QListWidgetItem(self.ui.listWidget_object_center)
+					brush = QBrush(QColor(16, 65, 53))
+					brush.setStyle(Qt.SolidPattern)	
 					item.setBackground(brush)
 					item_widget = custom_widget.customWidgetFileExplorer()
 
@@ -300,20 +345,19 @@ class salProjectExplorer( QtGui.QMainWindow ):
 					currentSeqItem = currentSeqItem.text()
 					path =  getInfo.filmPath + '/' +  currentSeqItem 
 
+					if not os.path.exists(path):
+						return
+
 				for mytype in os.listdir( path ):
 
 					workspace = '%s/%s'%( path, mytype) 
-					# thumbnail_path = "C:/Users/siras/Pictures/14936969_1362716400413980_313115908_n.jpg"
-					# thumbnail_path = workspace + '/thumbnail.jpg'
-					# if not os.path.exists( thumbnail_path ) :
-						# thumbnail_path = getInfo.get_ProjectPath() + '/thumbnail_miss.jpg'
 
 					thumbnail_path = getInfo.getThumbnail(workspace = workspace, filename = mytype)
 					datemodified   = time.strftime("%d/%m/%Y %H:%M %p",time.gmtime( os.path.getmtime(workspace) ))
 
-					item = QtGui.QListWidgetItem(self.ui.listWidget_object_center)
-					brush = QtGui.QBrush(QtGui.QColor(16, 65, 53))
-					brush.setStyle(QtCore.Qt.SolidPattern)	
+					item = QListWidgetItem(self.ui.listWidget_object_center)
+					brush = QBrush(QColor(16, 65, 53))
+					brush.setStyle(Qt.SolidPattern)	
 					item.setBackground(brush)
 					item_widget = custom_widget.customWidgetFileExplorer()
 
@@ -356,9 +400,9 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				dirList = [i for i in os.listdir(path) if i != 'edits']
 
 				for i in dirList:
-					item = QtGui.QListWidgetItem(i)
+					item = QListWidgetItem(i)
 					# item.setText(i)
-					item.setData(QtCore.Qt.UserRole, objString(path+'/'+i))
+					item.setData(Qt.UserRole, objString(path+'/'+i))
 					self.ui.listWidget_version.addItem(item)
 
 				result = True
@@ -386,9 +430,9 @@ class salProjectExplorer( QtGui.QMainWindow ):
 				dirList = [i for i in os.listdir(path) if i != 'edits']
 
 				for i in dirList:
-					item = QtGui.QListWidgetItem(i)
+					item = QListWidgetItem(i)
 					# item.setText(i)
-					item.setData(QtCore.Qt.UserRole, objString(path+'/'+i))
+					item.setData(Qt.UserRole, objString(path+'/'+i))
 					self.ui.listWidget_version.addItem(item)
 
 				result = True
@@ -399,8 +443,18 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		return result
 
 	def project_select(self):
+		""" """
+
+		global getInfo
+
 		currenttext = self.ui.comboBox_project.currentText()
-		# print currenttext
+		getInfo = env.getInfo(projectName = currenttext)
+
+		self.refresh('asset_list')
+		self.refresh('sequence_list')
+		self.refresh('version')
+
+		print ("project_select : " + currenttext)
 
 	def listWidget_asset_itemSelectionChanged(self):
 		currentItem = self.ui.listWidget_asset.currentItem().text()
@@ -480,9 +534,11 @@ class salProjectExplorer( QtGui.QMainWindow ):
 	def listWidget_version_itemClicked(self):
 
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
-		filePath = self.ui.listWidget_version.currentItem().data( QtCore.Qt.UserRole ).getString()
-		# self.ui.label_path_editable.setText( filePath )
+		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
+		currentproject = self.ui.comboBox_project.currentText()
 
+		myGetInfo = env.getInfo( projectName = currentproject, path = filePath )
+		
 		# When working on assets
 		if tabText == 'assets':
 
@@ -511,24 +567,26 @@ class salProjectExplorer( QtGui.QMainWindow ):
 		# // Update information
 		# / get information
 		modDate = time.strftime("%d/%m/%Y %H:%M %p",time.gmtime( os.path.getmtime(filePath) ))
-		version = 'v%03d'%(env.getInfo(path = filePath).get_version())
-		filename= env.getInfo(path = filePath).get_fileName()
-		artist  = env.getInfo(path = filePath)._getUsername_fromPath()
+		version = 'v%03d'%(myGetInfo.get_version())
+		filename= myGetInfo.get_fileName()
+		artist  = myGetInfo._getUsername_fromPath()
 
 		# / set image
-		thumbnail_workSpace = env.getInfo(path = filePath).get_workspace()
-		thumbnail_file = env.getInfo(path = filePath).get_fileName(ext=False)+'.jpg'
-		thumbnail_path = env.getInfo(path = filePath).getThumbnail(workspace = thumbnail_workSpace, filename = thumbnail_file ,perfile=True)
-		pixmap = QtGui.QPixmap(thumbnail_path)
+		thumbnail_workSpace = myGetInfo.get_workspace()
+		thumbnail_file 		= myGetInfo.get_fileName(ext=False)+'.jpg'
+		thumbnail_path 		= myGetInfo.getThumbnail(workspace = thumbnail_workSpace, filename = thumbnail_file ,perfile=True)
+		
+		pixmap = QPixmap(thumbnail_path)
 		pixmap = pixmap.scaledToWidth(276)
+
 		self.ui.label_ImagePlaceHolder.setPixmap(pixmap)
 
 		# / list information field
 		self.ui.label_fileName.setText( filename )
-		self.ui.label_version.setText( version )
-		self.ui.label_modDate.setText( modDate )
-		self.ui.label_aetist.setText( artist )
-		self.ui.label_comment.setText('...')
+		self.ui.label_version.setText ( version )
+		self.ui.label_modDate.setText ( modDate )
+		self.ui.label_aetist.setText  ( artist )
+		self.ui.label_comment.setText ('...')
 		
 
 	def tabWidget_currentChanged(self):
@@ -582,7 +640,7 @@ class salProjectExplorer( QtGui.QMainWindow ):
 			print ('no file selected.')
 			return
 
-		filePath = self.ui.listWidget_version.currentItem().data( QtCore.Qt.UserRole ).getString()
+		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
 		# self.ui.label_path_editable.setText( filePath )
 
 		if os.path.exists(filePath) :
@@ -976,12 +1034,12 @@ class salProjectExplorer( QtGui.QMainWindow ):
 
 def getMayaWindow():
 	"""
-	Get the main Maya window as a QtGui.QMainWindow instance
-	@return: QtGui.QMainWindow instance of the top level Maya windows
+	Get the main Maya window as a QMainWindow instance
+	@return: QMainWindow instance of the top level Maya windows
 	"""
 	ptr = apiUI.MQtUtil.mainWindow()
 	if ptr is not None:
-		return shiboken.wrapInstance(long(ptr), QtGui.QWidget)
+		return shiboken.wrapInstance(long(ptr), QWidget)
 
 def clearUI():
 	if cmds.window('sal_projectExplorer',exists=True):

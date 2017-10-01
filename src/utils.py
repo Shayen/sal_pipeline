@@ -1,8 +1,25 @@
 import maya.cmds as cmds
 
-import PySide.QtCore as QtCore
-import PySide.QtGui	 as QtGui
-import PySide.QtUiTools as QtUiTools
+# import PySide.QtCore as QtCore
+# import PySide.QtGui	 as QtGui
+# import PySide.QtUiTools as QtUiTools
+
+# import pyside
+try:
+	from PySide2 import QtCore
+	from PySide2 import QtGui
+	from PySide2 import QtWidgets
+	from PySide2 import QtUiTools
+	from PySide2 import __version__
+	import shiboken2
+
+except ImportError:
+	from PySide import QtCore
+	from PySide import QtGui
+	from PySide import QtUiTools
+	from PySide import __version__
+	import shiboken
+  
 import os, sys, zipfile
 
 from sal_pipeline.src import env
