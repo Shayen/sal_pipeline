@@ -18,7 +18,7 @@ except ImportError:
 
 from ...src import env
 from ...src import utils
-from ...ui  import custom_widget
+import custom_widget
 
 reload(custom_widget)
 reload(utils)
@@ -32,10 +32,11 @@ getEnv 	= env.getEnv()
 
 modulepath = getEnv.modulePath()
 
-__version__ = 1.2
+__version__ = 1.3
 # V1.0 : All function running well.
 # V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
 # V1.2 : Support multi project switching
+# V1.3 : Add preference windows
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
