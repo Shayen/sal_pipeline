@@ -9,22 +9,12 @@ VFX Pipeline toolset for Graduate project in 2017 : Visual effects, Digital art,
 - [ ] Connect pipeline to Project manager platform (Shotgun, TACTIC)
 
 ## Usage
-Install this repository and connect by this python script:
+1) Install this repository in your computer.
+2) Copy prefs folder to ```Documents\maya\2016\prefs```
+3) Open Maya then load sal_pipeline shelf.
+4) Add `SAL_MODULE_PATH` to `Maya.env` 
 
-```python
-import sys
-
-toolPath = 'C:/Path/To/repository'
-
-if toolPath not in sys.path :
-	sys.path.append(toolPath)
-
-from sal_pipeline import salPipeline
-reload(salPipeline)
-
-# your app name
-salPipeline.app_projectExplorer()
-```
+```SAL_MODULE_PATH = Path:/To/sal_pipeline_repo```
 
 ## Configuration
 
