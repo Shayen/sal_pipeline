@@ -187,6 +187,10 @@ class salProjectExplorer( QMainWindow ):
 				break
 
 		getInfo = env.getInfo(projectName = project)
+
+		# Check project is ready to use
+
+
 		activePrj = self.ui.comboBox_project.findText( project )
 		self.ui.comboBox_project.setCurrentIndex(activePrj)
 
@@ -619,8 +623,7 @@ class salProjectExplorer( QMainWindow ):
 		try:
 			os.mkdir(path)
 			print('Create success.')
-			# utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
-			# print('Create new sequence success : ' + path)
+
 		except Exception as e:
 			raise(e)
 		
@@ -976,11 +979,10 @@ class salProjectExplorer( QMainWindow ):
 				# Description
 				os.mkdir(path)
 
-				# Description
 				utils.utils().unzip(zipPath = getEnv.assetTemplate_zipPath() ,dest = path)
 				print('Create new sequence success : ' + path)
 
-			except Exception as e:
+			except WindowsError as e:
 				raise(e)
 
 		# When working on shot		
@@ -1017,14 +1019,13 @@ class salProjectExplorer( QMainWindow ):
 					path = getInfo.filmPath + '/' + sequence + '/' + result
 
 			try:
-				# Description
+				# create directory pattern from template
 				os.mkdir(path)
 
-				# Description
 				utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
 				print('Create new sequence success : ' + path)
 
-			except Exception as e:
+			except WindowsError as e:
 				raise(e)
 
 		self.refresh('center')
