@@ -11,7 +11,7 @@ class getEnv(object):
 		self.shotTemplateFileName = 'shot_template.zip'
 		self.projectTemplateFileName = 'projectSetup_template.zip'
 		self.assetTemplateFileName = 'asset_template.zip'
-		self.configureFileName = 'configure_test.json'
+		self.configureFileName = 'configure.json'
 
 		self.globalConfig_data = self._read_globalConfig()
 		self.user = self._get_Username()
@@ -24,6 +24,26 @@ class getEnv(object):
 		"""
 		path = self._modulePath_
 		return path
+
+	def checkEnv(self):
+		''' checking environment '''
+		is_envSet = False
+
+		# get active project
+		for project in self.globalConfig_data['setting']['projects'].keys():
+			if self.globalConfig_data['setting']['projects'][project]['active'] == True:
+				break
+
+		project_path = self.globalConfig_data['setting']['projects'][project]["project_path"]
+		if os.path.exists( project_path ):
+
+			info = getInfo( projectName=project, path=project_path )
+			if not os.path.exists(info.assetPath) or not os.path.exists(info.filmPath):
+				raise IOError("asset path or film path not exists. please recheck.")
+			else:
+				is_envSet = True
+
+		return is_envSet
 
 	def ui_dirPath(self):
 		return self._modulePath_ + '/ui'

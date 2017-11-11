@@ -90,8 +90,8 @@ class utils(object):
 			 capture viewport 2.0 DX 11 
 
 			 var : @outputdir	: Output directory
-			 	   @filename	: filename and extention
-			 	   @ext 		: default 'jpg'
+				   @filename	: filename and extention
+				   @ext 		: default 'jpg'
 		"""
 
 		path = outputdir + '/' + filename
