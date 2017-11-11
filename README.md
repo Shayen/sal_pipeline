@@ -25,13 +25,18 @@ I use computer name to mapped with username.
 ```JSON
 {
 	"setting": {
-		"project_path": "P:/_Project_directory_",
-		"project_code": "_Project_code_name_",
-		"project_name": "_Project_full_name_"
+		"projects" : {
+			"_Project_name_":{
+				"project_path": "Path:/to/your/project_Directory",
+				"project_code": "_project_code_",
+				"project_name": "_project_fullname_",
+				"active" : true
+			}
+		}
 	},
 	"username" :{
-		"COMPUTERNAME" : "USERNAME",
-		"COMPUTERNAME_1" : "USERNAME_1"
+		"Computername1": "crew_name1",
+		"Computername2": "crew_name2"
 	}
 }
 ```
