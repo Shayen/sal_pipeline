@@ -28,7 +28,6 @@ except ImportError:
 
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
-reload(custom_widget)
 reload(utils)
 reload(env)
 
@@ -36,14 +35,42 @@ getEnv 	= env.getEnv()
 getInfo = env.getInfo()
 modulepath = getEnv.modulePath()
 
-__version__ = 0.1
+__app_version__ = "0.1"
 # V0.1
 
-class salAssetImporter( QMainWindow ):
+class mayaQtTemplateClass( QMainWindow ):
 
 	def __init__(self, parent=None):
 		""" Description """
 		QMainWindow.__init__(self, parent)
+
+		_uiFilename_ = 'templateUI.ui'
+		_uiFilePath_ = modulepath + '/ui/' + _uiFilename_		
+
+		# Check is ui file exists?
+		if not os.path.isfile( _uiFilePath_ ):
+			cmds.error( 'File ui not found.' )
+
+		# ---- LoadUI -----
+		loader = QUiLoader()
+		currentDir = os.path.dirname(__file__)
+		file = QFile( _uiFilePath_ )
+		file.open(QFile.ReadOnly)
+		self.ui = loader.load(file, parentWidget=self)
+		file.close()
+		# -----------------
+
+		self.ui.setWindowTitle('Maya template window v.' + str(__app_version__))
+
+		self._initUI()
+		self._initConnect()
+
+		self.ui.show()
+
+	def _initUI(self):
+		pass
+
+	def _initConnect(self):
 		pass
 
 #####################################################################
@@ -69,7 +96,7 @@ def clearUI():
 
 def run():
 	clearUI()
-	app = salAssetImporter( getMayaWindow() )
+	app = mayaQtTemplateClass( getMayaWindow() )
 	# pass
 
 if __name__ == '__main__':
