@@ -92,6 +92,9 @@ class utils(object):
 			 var : @outputdir	: Output directory
 				   @filename	: filename and extention
 				   @ext 		: default 'jpg'
+
+			 return: path (if success)
+			 		 Flase[bool] (if false)
 		"""
 
 		path = outputdir + '/' + filename
@@ -112,8 +115,11 @@ class utils(object):
 			image.writeToFile(path, ext)
 
 			print ('Capture success : ' + path )
+			return path
 		except Exception as e:
 			print ('cannot capture')
+
+		return False
 
 if __name__ == '__main__':
 	
