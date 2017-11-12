@@ -32,10 +32,11 @@ getEnv 	= env.getEnv()
 
 modulepath = getEnv.modulePath()
 
-__version__ = 1.2
+__APP_version__ = "1.2.1"
 # V1.0 : All function running well.
 # V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
 # V1.2 : Support multi project switching
+# V1.2.1: BugFix: copy project, shot, sequence template.
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -111,7 +112,7 @@ class salProjectExplorer( QMainWindow ):
 		file.close()
 		# -----------------
 
-		self.ui.setWindowTitle('Project Explorer v.' + str(__version__))
+		self.ui.setWindowTitle('Project Explorer v.' + str(__APP_version__))
 
 		# setup project combobox
 		self.setup_projectCombobox()
