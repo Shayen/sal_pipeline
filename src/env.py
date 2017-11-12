@@ -120,8 +120,8 @@ class getInfo(object):
 
 		self.user = self.env.user
 		
-		self.projectPath = self.globalConfigureData['setting']['projects'][projectName]['project_path']
-		self.projectCode = self.globalConfigureData['setting']['projects'][projectName]['project_code']
+		self.projectPath = self.globalConfigureData['setting']['projects'][self.projectName]['project_path']
+		self.projectCode = self.globalConfigureData['setting']['projects'][self.projectName]['project_code']
 
 		self.productionPath = self.projectPath + '/production'
 		self.assetPath	= self.productionPath + '/assets' 
@@ -147,6 +147,7 @@ class getInfo(object):
 			if self.globalConfigureData['setting']['projects'][projectName]['project_code'] == project_code:
 				break 
 
+		print ("Get project name from path : %s"%projectName)
 		return projectName
 
 	def getUsername(self):
@@ -246,6 +247,14 @@ class getInfo(object):
 			return filename
 		else:
 			return self.filename
+
+	def get_pubName(self, ext=True):
+		''' Generate publish name '''
+
+		_splitData = self.get_fileName(ext=False).split("_")[:-3]
+		_splitData.append( "pub.ma" )
+
+		return '_'.join(_splitData)
 
 	def get_task(self):
 		task = self.splitPath_data[-2]
