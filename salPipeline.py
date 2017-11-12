@@ -44,6 +44,14 @@ def app_projectExplorer():
 	reload(projectExplorer)
 	projectExplorer.run()
 
+def app_mayaGlobalPublisher():
+	''' run project explorer '''
+	env.checkEnv()
+
+	from sal_pipeline.app import globalPublisher
+	reload(globalPublisher)
+	globalPublisher.run()
+
 def app_assetImporter():
 	# from sal_pipeline.app import assetImporter
 	# reload(assetImporter)
