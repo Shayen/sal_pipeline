@@ -8,7 +8,7 @@ import maya.OpenMayaUI as apiUI
 import shiboken
 
 from functools import partial
-import os, sys, subprocess, time, datetime
+import os, sys, subprocess, time, datetime, shutil
 
 # ============ Will change to qt.py ============
 try:
@@ -74,6 +74,7 @@ class mayaGlobalPublisher( QMainWindow ):
 		self.ui.setWindowTitle('Maya global publisher v.' + str(__app_version__))
 
 		self._initUI()
+		self._initConnect()
 		self.ui.show()
 
 	def _initUI(self):
@@ -82,13 +83,15 @@ class mayaGlobalPublisher( QMainWindow ):
 		self.ui.label_filePath.setText( cmds.file(q=True, sn=True) )
 		self.ui.label_dateTime.setText( str(time.strftime("%d/%m/%Y %H:%M %p",time.localtime())))
 
+		# FUTURE : Query configyration from config file.
 		self.ui.comboBox_pipelineStep.addItem("model")
 
 		# capture viewport
 		self.setThumbnail( self.captureViewport() )
 
 	def _initConnect(self):
-		pass
+		self.ui.pushButton_cancel.clicked.connect(self.closeWindow)
+		self.ui.pushButton_publish.clicked.connect(self._doPublish)
 
 	def captureViewport(self):
 
@@ -118,6 +121,43 @@ class mayaGlobalPublisher( QMainWindow ):
 		pixmap = pixmap.scaledToWidth(240)
 		self.ui.label_imagePlaceHolder.setPixmap(pixmap)
 
+	def _doPublish(self):
+		''' publish file '''
+
+		self.ui.listWidget_allStatus.clear()
+
+		# Model
+		# - make hero file
+		# -
+
+		currentPath  = os.path.dirname( cmds.file(q=True, sn=True) )
+		pub_fileName = myInfo.get_pubName(ext=True)
+
+		# Check save state::
+		# // When file have some change, Save in new version.
+		if cmds.file(q=True, modified=True) :
+
+			filename = cmds.file(q=True,sn=True, shn=True)
+			new_fileName = myInfo.get_nextVersion(filename = True )
+			currentPath = os.path.dirname( cmds.file(q=True, sn=True) )
+
+			# save increment
+			cmds.file( rename='%s/%s'%( currentPath, new_fileName ) )
+			result =  cmds.file( save=True, type='mayaAscii' )
+			self.update_Status("save increment.")
+
+		# save to Hero file
+		# - Get hero path
+		destination_path = "{0}/{1}/{2}".format( os.path.dirname( currentPath ), 'pub', pub_fileName )
+		shutil.copy2(src = cmds.file(q=True,sn=True), dst = destination_path)
+		self.update_Status("Create hero file.")
+
+	def update_Status(self, message):
+		item = QListWidgetItem(message)
+		self.ui.listWidget_allStatus.addItem(item)
+
+	def closeWindow(self):
+		clearUI()
 
 #####################################################################
 
