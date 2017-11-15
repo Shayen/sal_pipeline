@@ -124,7 +124,7 @@
            <item>
             <widget class="QCheckBox" name="checkBox_2">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>OBJ</string>
@@ -162,6 +162,9 @@
            </item>
            <item>
             <widget class="QCheckBox" name="checkBox_4">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Platblast</string>
              </property>
@@ -170,7 +173,7 @@
            <item>
             <widget class="QCheckBox" name="checkBox_5">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>Turntable render</string>
@@ -331,7 +334,7 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="pushButton_publish">
         <property name="minimumSize">
          <size>
           <width>120</width>
@@ -344,7 +347,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="pushButton_cancel">
         <property name="minimumSize">
          <size>
           <width>0</width>
