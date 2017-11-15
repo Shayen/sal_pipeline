@@ -236,6 +236,12 @@ class getInfo(object):
 		self.type = myType
 		return myType
 
+	def _getAssetType(self):
+		''' get type of asset '''
+
+		assetType = self.splitPath()[2]
+		return assetType
+
 	def get_fileName(self, ext=True):
 		'''
 			return : ppl_sq10_sh100_lighting_v003_nook.ma
@@ -252,6 +258,7 @@ class getInfo(object):
 		''' Generate publish name '''
 
 		_splitData = self.get_fileName(ext=False).split("_")[:-3]
+		_splitData.append( self.get_task() )
 		_splitData.append( "pub.ma" )
 
 		return '_'.join(_splitData)
@@ -281,7 +288,18 @@ class getInfo(object):
 			return allfile[-1]
 
 		elif self.type == self.asset:
-			pass
+			path = '%s/%s/%s/%s/%s/%s/%s'%(	self.projectPath 	, 
+											'production'		, 
+											'assets'			, 
+											self._getAssetType(), 
+											self.get_name()		, 
+											'scenes'			, 
+											self.get_task() 
+											)
+			print path
+
+			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+			return allfile[-1]
 
 		else:
 			cmds.error('Type not match : ' + self.type)
@@ -295,7 +313,11 @@ class getInfo(object):
 
 		if filename :
 			version = 'v%03d'%(result)
-			result = '_'.join( [ self.projectCode, self.get_sequence(), self.get_shot(), self.get_task(), version, self.get_user()+'.ma' ] )
+
+			if self.type == self.shot:
+				result = '_'.join( [ self.projectCode, self.get_sequence(), self.get_shot(), self.get_task(), version, self.get_user()+'.ma' ] )
+			else :
+				result = '_'.join( [ self.projectCode, self._getAssetType(), self.get_name(), self.get_task(), version, self.get_user()+'.ma' ] )
 
 		return result
 
