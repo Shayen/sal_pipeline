@@ -3,8 +3,9 @@ VFX Pipeline toolset for Graduate project in 2017 : Visual effects, Digital art,
 
 ### to do [WIP] :
 - [x] Project Explorer
+- [x] Global preference editor
 - [ ] Asset importer (wip)
-- [ ] Global Publisher
+- [x] Global Publisher
 - [ ] scene archive tool
 - [ ] Connect pipeline to Project manager platform (Shotgun, TACTIC)
 
