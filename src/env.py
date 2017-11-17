@@ -1,5 +1,4 @@
 import os, sys, json, socket
-import maya.cmds as cmds
 import maya.mel as mel
 
 modulePath = '/'.join( os.path.dirname( os.path.abspath(__file__) ).split('\\')[:-1] )
@@ -113,6 +112,7 @@ class getEnv(object):
 class getInfo(object):
 
 	def __init__(self,projectName=None,path=None):
+		import maya.cmds as cmds
 
 		self.env = getEnv()
 
