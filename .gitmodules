@@ -1,3 +1,0 @@
-[submodule "src/pyqt"]
-	path = src/pyqt
-	url = https://github.com/mottosso/Qt.py.git

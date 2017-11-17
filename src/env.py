@@ -11,7 +11,7 @@ class getEnv(object):
 		self.shotTemplateFileName = 'shot_template.zip'
 		self.projectTemplateFileName = 'projectSetup_template.zip'
 		self.assetTemplateFileName = 'asset_template.zip'
-		self.configureFileName = 'configure_test.json'
+		self.configureFileName = 'configure.json'
 
 		self.globalConfig_data = self._read_globalConfig()
 		self.user = self._get_Username()
@@ -24,6 +24,26 @@ class getEnv(object):
 		"""
 		path = self._modulePath_
 		return path
+
+	def checkEnv(self):
+		''' checking environment '''
+		is_envSet = False
+
+		# get active project
+		for project in self.globalConfig_data['setting']['projects'].keys():
+			if self.globalConfig_data['setting']['projects'][project]['active'] == True:
+				break
+
+		project_path = self.globalConfig_data['setting']['projects'][project]["project_path"]
+		if os.path.exists( project_path ):
+
+			info = getInfo( projectName=project, path=project_path )
+			if not os.path.exists(info.assetPath) or not os.path.exists(info.filmPath):
+				raise IOError("asset path or film path not exists. please recheck.")
+			else:
+				is_envSet = True
+
+		return is_envSet
 
 	def ui_dirPath(self):
 		return self._modulePath_ + '/ui'
@@ -49,6 +69,23 @@ class getEnv(object):
 	def configure_filePath(self):
 		return self.data_dirPath() + '/' + self.configureFileName
 
+	def update_config(self, data):
+		"""
+			update config data to configure.json file 
+
+			Var : @data : config data (json)
+		"""
+		
+		try :
+			# Dump data to config file
+			json.dump( data , open( self.configure_filePath(), 'w') )
+
+			# Replace Variable
+			self.globalConfig_data = data
+
+		except Exception as e:
+			print(e)
+		
 	def _read_globalConfig(self):
 		""" read config data from './configure.json' """
 		data = json.load( open( self.configure_filePath(), 'r') )
@@ -100,8 +137,8 @@ class getInfo(object):
 
 		self.user = self.env.user
 		
-		self.projectPath = self.globalConfigureData['setting']['projects'][projectName]['project_path']
-		self.projectCode = self.globalConfigureData['setting']['projects'][projectName]['project_code']
+		self.projectPath = self.globalConfigureData['setting']['projects'][self.projectName]['project_path']
+		self.projectCode = self.globalConfigureData['setting']['projects'][self.projectName]['project_code']
 
 		self.productionPath = self.projectPath + '/production'
 		self.assetPath	= self.productionPath + '/assets' 
@@ -127,6 +164,7 @@ class getInfo(object):
 			if self.globalConfigureData['setting']['projects'][projectName]['project_code'] == project_code:
 				break 
 
+		print ("Get project name from path : %s"%projectName)
 		return projectName
 
 	def getUsername(self):
@@ -215,6 +253,12 @@ class getInfo(object):
 		self.type = myType
 		return myType
 
+	def _getAssetType(self):
+		''' get type of asset '''
+
+		assetType = self.splitPath()[2]
+		return assetType
+
 	def get_fileName(self, ext=True):
 		'''
 			return : ppl_sq10_sh100_lighting_v003_nook.ma
@@ -226,6 +270,15 @@ class getInfo(object):
 			return filename
 		else:
 			return self.filename
+
+	def get_pubName(self, ext=True):
+		''' Generate publish name '''
+
+		_splitData = self.get_fileName(ext=False).split("_")[:-3]
+		_splitData.append( self.get_task() )
+		_splitData.append( "pub.ma" )
+
+		return '_'.join(_splitData)
 
 	def get_task(self):
 		task = self.splitPath_data[-2]
@@ -252,7 +305,18 @@ class getInfo(object):
 			return allfile[-1]
 
 		elif self.type == self.asset:
-			pass
+			path = '%s/%s/%s/%s/%s/%s/%s'%(	self.projectPath 	, 
+											'production'		, 
+											'assets'			, 
+											self._getAssetType(), 
+											self.get_name()		, 
+											'scenes'			, 
+											self.get_task() 
+											)
+			print path
+
+			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+			return allfile[-1]
 
 		else:
 			cmds.error('Type not match : ' + self.type)
@@ -266,7 +330,11 @@ class getInfo(object):
 
 		if filename :
 			version = 'v%03d'%(result)
-			result = '_'.join( [ self.projectCode, self.get_sequence(), self.get_shot(), self.get_task(), version, self.get_user()+'.ma' ] )
+
+			if self.type == self.shot:
+				result = '_'.join( [ self.projectCode, self.get_sequence(), self.get_shot(), self.get_task(), version, self.get_user()+'.ma' ] )
+			else :
+				result = '_'.join( [ self.projectCode, self._getAssetType(), self.get_name(), self.get_task(), version, self.get_user()+'.ma' ] )
 
 		return result
 

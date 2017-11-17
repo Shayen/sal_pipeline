@@ -85,10 +85,13 @@ class customWidgetFileExplorer( QWidget ):
 		# self.pixmap_Placeholder.setText(QApplication.translate("widget", "TextLabel", None, QApplication.UnicodeUTF8))
 		self.label_Filename.setText(QApplication.translate("widget", "File name :", None, QApplication.UnicodeUTF8))
 		self.label_Filename.setStyleSheet("""font-weight: bold;""")
+
 		self.fileName.setText(QApplication.translate("widget", "TextLabel", None, QApplication.UnicodeUTF8))
 		self.fileName.setStyleSheet("""font-weight: bold;""")
+
 		self.label_datemod.setText(QApplication.translate("widget", "Last Update :", None, QApplication.UnicodeUTF8))
 		self.label_datemod.setStyleSheet("""font-weight: bold;""")
+		
 		self.DateMod.setText(QApplication.translate("widget", "TextLabel", None, QApplication.UnicodeUTF8))
 		
 		self.label_comment.setText(QApplication.translate("widget", "Comment :", None, QApplication.UnicodeUTF8))
