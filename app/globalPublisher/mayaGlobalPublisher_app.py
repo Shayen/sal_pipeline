@@ -33,9 +33,10 @@ reload(utils)
 reload(env)
 
 # tool libs import
-import mayaGlobalPublisher_core as core
-reload(core)
+import mayaGlobalPublisher_core 
+reload(mayaGlobalPublisher_core)
 
+core = mayaGlobalPublisher_core.mayaGlobalPublisher_core()
 getEnv 	= env.getEnv()
 modulepath = getEnv.modulePath()
 
@@ -44,12 +45,15 @@ __app_version__ = '0.1'
 
 try:
 	myInfo = env.getInfo()
-except KeyError :
-	raise IOError("This file is not in pipeline. please check your file.")
+	myInfo.get_task()
+except IndexError :
+	e_msg = "## This file is not in pipeline. please check your file. ##\n"
+	print('_'*64)
+	print(e_msg)
+
+	raise IOError(e_msg)
 
 class mayaGlobalPublisher( QMainWindow ):
-
-	_pubThumbnail_Path = ''
 
 	def __init__(self, parent=None):
 		""" Description """
@@ -87,28 +91,11 @@ class mayaGlobalPublisher( QMainWindow ):
 		self.ui.comboBox_pipelineStep.addItem("model")
 
 		# capture viewport
-		self.setThumbnail( self.captureViewport() )
+		self.setThumbnail( core.captureViewport() )
 
 	def _initConnect(self):
 		self.ui.pushButton_cancel.clicked.connect(self.closeWindow)
 		self.ui.pushButton_publish.clicked.connect(self._doPublish)
-
-	def captureViewport(self):
-
-		filePath = cmds.file(q=True, sn=True)
-		if myInfo.isType() == 'shot':
-			workspace = '/'.join( filePath.split('/')[:-2] )
-		else :
-			workspace = '/'.join( filePath.split('/')[:-3] )
-
-		# generate unique filename
-		_pubThumbnail_Path 	= "{0}/_thumbnail".format(workspace)
-		thumbnail_file		= "pub_temp"
-
-		#capture
-		self._pubThumbnail_Path = utils.utils().captureViewport( outputdir = _pubThumbnail_Path, filename = thumbnail_file )
-		
-		return self._pubThumbnail_Path
 
 	def setThumbnail(self, imagePath):
 
@@ -125,32 +112,30 @@ class mayaGlobalPublisher( QMainWindow ):
 		''' publish file '''
 
 		self.ui.listWidget_allStatus.clear()
-
-		# Model
-		# - make hero file
-		# -
-
-		currentPath  = os.path.dirname( cmds.file(q=True, sn=True) )
-		pub_fileName = myInfo.get_pubName(ext=True)
-
+		is_postToFacebook = False 
 		# Check save state::
+		is_modifiedFile = cmds.file(q=True, modified=True)
+
 		# // When file have some change, Save in new version.
-		if cmds.file(q=True, modified=True) :
+		if is_modifiedFile :
 
-			filename = cmds.file(q=True,sn=True, shn=True)
-			new_fileName = myInfo.get_nextVersion(filename = True )
-			currentPath = os.path.dirname( cmds.file(q=True, sn=True) )
-
-			# save increment
-			cmds.file( rename='%s/%s'%( currentPath, new_fileName ) )
-			result =  cmds.file( save=True, type='mayaAscii' )
+			#  save Increment
+			core.saveIncrement()
 			self.update_Status("save increment.")
 
 		# save to Hero file
-		# - Get hero path
-		destination_path = "{0}/{1}/{2}".format( os.path.dirname( currentPath ), 'pub', pub_fileName )
-		shutil.copy2(src = cmds.file(q=True,sn=True), dst = destination_path)
+		core.creat_HeroFile()
 		self.update_Status("Create hero file.")
+
+		# export Publish data via JSON
+		core.export_pubData()
+		self.update_Status("Create publish metadata.")
+
+		if is_postToFacebook :
+			# post to FB group
+			# -- !!warning!! : user must be admin to group.
+			data = {}
+			post_result = core.post_toFacebook(data = data)
 
 	def update_Status(self, message):
 		item = QListWidgetItem(message)
