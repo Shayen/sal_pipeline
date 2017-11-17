@@ -62,6 +62,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineEdit_projectName</tabstop>
+  <tabstop>lineEdit_projectCode</tabstop>
+  <tabstop>lineEdit_projectPath</tabstop>
+  <tabstop>checkBox_active</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

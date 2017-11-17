@@ -23,7 +23,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Preference</string>
+       <string>Shape &amp; Light Pipeline global preference</string>
       </property>
      </widget>
     </item>
@@ -45,7 +45,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QListWidget" name="listWidget_projectData"/>
+         <widget class="QListWidget" name="listWidget_projectData">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::NoSelection</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -63,7 +67,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="pushButton_add_project">
             <property name="text">
              <string>Add project</string>
             </property>
@@ -86,7 +90,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTableWidget" name="tableWidget">
+         <widget class="QTableWidget" name="tableWidget_accout">
           <property name="sortingEnabled">
            <bool>true</bool>
           </property>
@@ -101,11 +105,6 @@
           <column>
            <property name="text">
             <string>Computer name</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Delete</string>
            </property>
           </column>
          </widget>
@@ -126,9 +125,16 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="pushButton_addUser">
             <property name="text">
              <string>Add user</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_deleteUser">
+            <property name="text">
+             <string>Delete user</string>
             </property>
            </widget>
           </item>
@@ -139,9 +145,9 @@
      </widget>
     </item>
     <item>
-     <widget class="QDialogButtonBox" name="buttonBox">
+     <widget class="QDialogButtonBox" name="buttonBox_main">
       <property name="standardButtons">
-       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       <set>QDialogButtonBox::Cancel|QDialogButtonBox::SaveAll</set>
       </property>
      </widget>
     </item>
@@ -150,5 +156,22 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox_main</sender>
+   <signal>rejected()</signal>
+   <receiver>SAL_global_preference_window</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>399</x>
+     <y>549</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
