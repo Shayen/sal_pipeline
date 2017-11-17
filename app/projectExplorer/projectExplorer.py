@@ -131,24 +131,24 @@ class salProjectExplorer( QMainWindow ):
 	def initUI(self):
 
 		self.setStyleSheet("""
-					        QWidget {
-					            color: white;
-					            font-size: 10pt;
-					            font-family: Tahoma;
-					            }
-					        QListWidget{
-					        	color: white;
-					        	border-color: orange;
-					        }
-					        QTabWidget{
-					        	font-size: 11pt;
-					        	font-weight: bold;
-					        }
-					        QComboBox:hover,QPushButton:hover,QListWidget:focus
-							{
-							    border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
+							QWidget {
+								color: white;
+								font-size: 10pt;
+								font-family: Tahoma;
+								}
+							QListWidget{
+								color: white;
+								border-color: orange;
 							}
-					        """)
+							QTabWidget{
+								font-size: 11pt;
+								font-weight: bold;
+							}
+							QComboBox:hover,QPushButton:hover,QListWidget:focus
+							{
+								border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
+							}
+							""")
 		self.ui.label_currentpath.setStyleSheet("""font-weight: bold;""")
 		# self.ui.label_path_editable.setStyleSheet("""font-weight: bold;""")
 
@@ -175,8 +175,7 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.listWidget_version.itemClicked.connect(self.listWidget_version_itemClicked)
 
 		# Menu action
-		self.ui.actionAccout_setting.triggered.connect(self.actionAccout_setting_triggered)
-		self.ui.actionProjects_setting.triggered.connect(self.actionProjects_setting_triggered)
+		self.ui.actionPreference_setting.triggered.connect(self.actionPreference_setting_triggered)
 
 	def setup_projectCombobox(self):
 		""" add list of project from config file to combobox """
@@ -1035,26 +1034,17 @@ class salProjectExplorer( QMainWindow ):
 
 		self.refresh('center')
 
-	def actionAccout_setting_triggered(self):
-		""" open accout setting window """
-
-		return
-		
-		# load globalconfig
-		config_data = getEnv.globalConfig_data
-		
-		# modify data
-		pass
-
-		# save globalconfig
-		getEnv.update_config( data = config_data )
-
-		# update setting
-		self.setup_projectCombobox()
-
-	def actionProjects_setting_triggered(self):
+	def actionPreference_setting_triggered(self):
 		""" open project setting window """
-		pass
+		def clearPrefUI():
+			if cmds.window('SAL_global_preference_window', exists=True):
+				cmds.deleteUI('SAL_global_preference_window')
+				clearPrefUI()
+
+		clearPrefUI()
+
+		from ..globalPreference import Global_preference
+		prefWin = Global_preference.sal_globalPreference(self)
 
 
 #####################################################################
@@ -1069,7 +1059,7 @@ def getMayaWindow():
 		return shiboken.wrapInstance(long(ptr), QWidget)
 
 def clearUI():
-	if cmds.window('sal_projectExplorer',exists=True):
+	if cmds.window('sal_projectExplorer', exists=True):
 		cmds.deleteUI('sal_projectExplorer')
 		clearUI()
 

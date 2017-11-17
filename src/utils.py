@@ -1,8 +1,4 @@
-import maya.cmds as cmds
-
-# import PySide.QtCore as QtCore
-# import PySide.QtGui	 as QtGui
-# import PySide.QtUiTools as QtUiTools
+# src/utils.py
 
 # import pyside
 try:
@@ -21,9 +17,6 @@ except ImportError:
 	import shiboken
   
 import os, sys, zipfile
-
-from sal_pipeline.src import env
-reload(env)
 
 class windows(object):
 
