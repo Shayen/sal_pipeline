@@ -320,7 +320,7 @@ class sal_globalPreference( QMainWindow ):
 			# skip when data not modified.
 			if data != self.database:
 				print( json.dumps(data,indent=2) )
-				# json.dump(data, open(self.databaseFilePath ,'w') )
+				json.dump(data, open(self.databaseFilePath ,'w') )
 
 				print ("Update success.")
 
