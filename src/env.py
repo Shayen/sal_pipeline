@@ -69,6 +69,23 @@ class getEnv(object):
 	def configure_filePath(self):
 		return self.data_dirPath() + '/' + self.configureFileName
 
+	def update_config(self, data):
+		"""
+			update config data to configure.json file 
+
+			Var : @data : config data (json)
+		"""
+		
+		try :
+			# Dump data to config file
+			json.dump( data , open( self.configure_filePath(), 'w') )
+
+			# Replace Variable
+			self.globalConfig_data = data
+
+		except Exception as e:
+			print(e)
+		
 	def _read_globalConfig(self):
 		""" read config data from './configure.json' """
 		data = json.load( open( self.configure_filePath(), 'r') )

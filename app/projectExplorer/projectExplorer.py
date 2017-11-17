@@ -18,7 +18,7 @@ except ImportError:
 
 from ...src import env
 from ...src import utils
-from ...ui  import custom_widget
+import custom_widget
 
 reload(custom_widget)
 reload(utils)
@@ -32,11 +32,12 @@ getEnv 	= env.getEnv()
 
 modulepath = getEnv.modulePath()
 
-__APP_version__ = "1.2.1"
+__APP_version__ = '1.3'
 # V1.0 : All function running well.
 # V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
 # V1.2 : Support multi project switching
 # V1.2.1: BugFix: copy project, shot, sequence template.
+# V1.3 : Add preference windows, add command "add asset"
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -172,6 +173,10 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.tabWidget.currentChanged.connect(self.tabWidget_currentChanged)
 		self.ui.listWidget_object_center.itemClicked.connect(self.listWidget_object_center_itemClicked)
 		self.ui.listWidget_version.itemClicked.connect(self.listWidget_version_itemClicked)
+
+		# Menu action
+		self.ui.actionAccout_setting.triggered.connect(self.actionAccout_setting_triggered)
+		self.ui.actionProjects_setting.triggered.connect(self.actionProjects_setting_triggered)
 
 	def setup_projectCombobox(self):
 		""" add list of project from config file to combobox """
@@ -514,7 +519,6 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.label_path_editable.setText( path )
 		self.refresh(section = 'version')
 		
-
 	def listWidget_object_center_itemClicked(self):
 		"""
 			Description
@@ -592,7 +596,6 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.label_modDate.setText ( modDate )
 		self.ui.label_aetist.setText  ( artist )
 		self.ui.label_comment.setText ('...')
-		
 
 	def tabWidget_currentChanged(self):
 		
@@ -632,6 +635,7 @@ class salProjectExplorer( QMainWindow ):
 		self.refresh('sequence_list')
 
 	def addAsset_pushButton_onClick(self):
+		""" add asset """
 		self.refresh('asset_list')
 
 	def pushButton_open_onClick(self):
@@ -1030,6 +1034,27 @@ class salProjectExplorer( QMainWindow ):
 				raise(e)
 
 		self.refresh('center')
+
+	def actionAccout_setting_triggered(self):
+		""" open accout setting window """
+
+		return
+		
+		# load globalconfig
+		config_data = getEnv.globalConfig_data
+		
+		# modify data
+		pass
+
+		# save globalconfig
+		getEnv.update_config( data = config_data )
+
+		# update setting
+		self.setup_projectCombobox()
+
+	def actionProjects_setting_triggered(self):
+		""" open project setting window """
+		pass
 
 
 #####################################################################

@@ -408,6 +408,7 @@
      <string>Preference</string>
     </property>
     <addaction name="actionAccout_setting"/>
+    <addaction name="actionProjects_setting"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuPreference"/>
@@ -430,6 +431,11 @@
   <action name="actionRecent_open">
    <property name="text">
     <string>Recent open</string>
+   </property>
+  </action>
+  <action name="actionProjects_setting">
+   <property name="text">
+    <string>Projects setting</string>
    </property>
   </action>
  </widget>
