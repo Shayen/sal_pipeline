@@ -38,6 +38,7 @@ __APP_version__ = '1.3'
 # V1.2 : Support multi project switching
 # V1.2.1: BugFix: copy project, shot, sequence template.
 # V1.3 : Add preference windows, add command "add asset"
+# V1.4 : Save recent opened path in window.
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -126,6 +127,8 @@ class salProjectExplorer( QMainWindow ):
 		self.refresh('asset_list')
 		self.refresh('sequence_list')
 
+		self._init_recentUiStep()
+
 		self.ui.show()
 
 	def initUI(self):
@@ -171,11 +174,110 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.listWidget_sequence.itemSelectionChanged.connect(self.listWidget_sequence_itemSelectionChanged)
 		self.ui.listWidget_task.itemClicked.connect(self.listWidget_task_itemSelectionChanged)
 		self.ui.tabWidget.currentChanged.connect(self.tabWidget_currentChanged)
-		self.ui.listWidget_object_center.itemClicked.connect(self.listWidget_object_center_itemClicked)
+		self.ui.listWidget_object_center.itemSelectionChanged.connect(self.listWidget_object_center_itemClicked)
 		self.ui.listWidget_version.itemClicked.connect(self.listWidget_version_itemClicked)
 
 		# Menu action
 		self.ui.actionPreference_setting.triggered.connect(self.actionPreference_setting_triggered)
+
+	def _init_recentUiStep(self):
+		''' 
+			Setup UI from recent opened 
+
+			from structure : 'smallFun|assets|character|rat'
+		'''
+
+		def _findItem_CenterListWidget(ui, text):
+			''' Find data in center ListWidget '''
+
+			for index,item in [ (i,ui.item(i)) for i in range(ui.count())] :
+
+				fileName = ui.itemWidget( item ).filename(True)
+				if fileName == text :
+					return index
+
+			return None
+
+		# ------------------------------------------------------
+
+		is_optionVarExists = cmds.optionVar( exists='sal_prjExpl' )
+
+		if is_optionVarExists :
+
+			try :
+				recent_UI = cmds.optionVar( q ="sal_prjExpl").split('|')
+				recentPrjt = recent_UI[0]
+				recentTabType = recent_UI[1]
+				recentTask = recent_UI[4]
+
+				# set project combobox
+				prjItem = self.ui.comboBox_project.findText(recentPrjt, Qt.MatchExactly)
+				if not prjItem :
+					return False
+				else : 
+					self.ui.comboBox_project.setCurrentIndex(prjItem)
+
+				# set Type
+				if recentTabType == 'assets' :
+					self.ui.tabWidget.setCurrentIndex(0)
+				else :
+					self.ui.tabWidget.setCurrentIndex(1)
+
+				# Type is 'shots'
+				if recentTabType == 'shots':
+					recentSeq  = recent_UI[2]
+					recentSht  = recent_UI[3]
+
+					# set sequence
+					seqItem = self.ui.listWidget_sequence.findItems(recentSeq, Qt.MatchExactly)
+					if seqItem == [] :
+						return False
+					else : 
+						self.ui.listWidget_sequence.setCurrentItem(prjItem[0])
+
+					# set Shot
+					shotItem = _findItem_CenterListWidget( ui = self.ui.listWidget_object_center, text = recentSht)
+					if not shotItem :
+						return False
+					else : 
+						self.ui.listWidget_object_center.setCurrentRow(shotItem)
+
+					# set Task
+					taskItem = self.ui.listWidget_task.findItems(recentTask, Qt.MatchExactly)
+					if taskItem == [] :
+						return False
+					else : 
+						self.ui.listWidget_task.setCurrentItem(taskItem[0])
+
+
+				else :
+					recentAsst = recent_UI[3]
+					recentType = recent_UI[2]
+
+					# set Type
+					recentTypeItem = self.ui.listWidget_asset.findItems(recentType, Qt.MatchExactly)
+					if recentTypeItem == [] :
+						return False
+					else : 
+						self.ui.listWidget_asset.setCurrentItem(recentTypeItem[0])
+
+					# set Asset
+					assetItem = _findItem_CenterListWidget( ui = self.ui.listWidget_object_center, text = recentAsst)
+					if not assetItem :
+						return False
+					else :
+						self.ui.listWidget_object_center.setCurrentRow(assetItem)
+
+					# set Task
+					taskItem = self.ui.listWidget_task.findItems(recentTask, Qt.MatchExactly)
+					if taskItem == [] :
+						return False
+					else : 
+						self.ui.listWidget_task.setCurrentItem(taskItem[0])
+
+			except IndexError as e :
+				print (e)
+				return False
 
 	def setup_projectCombobox(self):
 		""" add list of project from config file to combobox """
@@ -682,6 +784,24 @@ class salProjectExplorer( QMainWindow ):
 
 			except Exception as e:
 				raise e
+
+			# save optionVar
+			currentPrjt = currentproject = self.ui.comboBox_project.currentText()
+			currentType = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+			currentcenterItem	= self.ui.listWidget_object_center.currentItem()
+			currentTask = self.ui.listWidget_task.currentItem().text()
+
+			if currentType == 'shots':
+				currentSeq 		= self.ui.listWidget_sequence.currentItem().text()
+				shotName 		= self.ui.listWidget_object_center.itemWidget( currentcenterItem ).filename(True)
+				current_Step 	= "{0}|{1}|{2}|{3}|{4}".format( currentPrjt, currentType, currentSeq, shotName, currentTask )
+
+			else :
+				currentAssets 	= self.ui.listWidget_asset.currentItem().text()
+				currentSubType 	= self.ui.listWidget_object_center.itemWidget( currentcenterItem ).filename(True)
+				current_Step 	= "{0}|{1}|{2}|{3}|{4}".format( currentPrjt, currentType, currentAssets, currentSubType, currentTask )
+
+			cmds.optionVar( sv = ["sal_prjExpl", current_Step])
 
 	def openExplorer_onclick(self):
 		'''
