@@ -1,5 +1,7 @@
 import maya.cmds as cmds
 
+import sys, os, shutil
+
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
 reload(utils)
