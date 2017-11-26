@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'D:\WORK\Programming\sal_pipeline\ui\Global_preference_window_projectWidget.ui'
-#
-# Created: Mon Nov 27 01:41:42 2017
-#      by: pyside-uic 0.2.15 running on PySide 1.2.4
-#
-# WARNING! All changes made in this file will be lost!
 
 try:
 	from PySide2.QtCore import *

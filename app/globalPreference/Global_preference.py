@@ -311,7 +311,7 @@ class sal_globalPreference( QMainWindow ):
 				for prj in data.get("setting")["projects"].keys() :
 					project_path = data.get("setting")["projects"][prj]["project_path"]
 					
-					# If Directory not exists
+					# If directory not exists.
 					try:
 						dirList = os.listdir(project_path )
 					except WindowsError:
