@@ -72,34 +72,34 @@ class customWidgetFileExplorer( QWidget ):
 		self.horizontalLayout.addWidget(self.action_comboBox)
 		self.horizontalLayout.setStretch(1, 2)
 
-		self.action_comboBox.setItemText(0, QApplication.translate("widget", "Action", None, QApplication.UnicodeUTF8))
-		self.action_comboBox.setItemText(1, QApplication.translate("widget", "Open folder", None, QApplication.UnicodeUTF8))
-		self.action_comboBox.setItemText(2, QApplication.translate("widget", "Copy path", None, QApplication.UnicodeUTF8))
+		self.action_comboBox.setItemText(0, QApplication.translate("widget", "Action"))
+		self.action_comboBox.setItemText(1, QApplication.translate("widget", "Open folder"))
+		self.action_comboBox.setItemText(2, QApplication.translate("widget", "Copy path"))
 
 		# self.setStyleSheet("background-color:red;")
 		self.retranslateUi( )
 		# QMetaObject.connectSlotsByName( self )
 
 	def retranslateUi(self):
-		# form.setWindowTitle(QApplication.translate("widget", "widget", None, QApplication.UnicodeUTF8))
-		# self.pixmap_Placeholder.setText(QApplication.translate("widget", "TextLabel", None, QApplication.UnicodeUTF8))
-		self.label_Filename.setText(QApplication.translate("widget", "File name :", None, QApplication.UnicodeUTF8))
+		# form.setWindowTitle(QApplication.translate("widget", "widget"))
+		# self.pixmap_Placeholder.setText(QApplication.translate("widget", "TextLabel"))
+		self.label_Filename.setText(QApplication.translate("widget", "File name :"))
 		self.label_Filename.setStyleSheet("""font-weight: bold;""")
 
-		self.fileName.setText(QApplication.translate("widget", "TextLabel", None, QApplication.UnicodeUTF8))
+		self.fileName.setText(QApplication.translate("widget", "TextLabel"))
 		self.fileName.setStyleSheet("""font-weight: bold;""")
 
-		self.label_datemod.setText(QApplication.translate("widget", "Last Update :", None, QApplication.UnicodeUTF8))
+		self.label_datemod.setText(QApplication.translate("widget", "Last Update :"))
 		self.label_datemod.setStyleSheet("""font-weight: bold;""")
 		
-		self.DateMod.setText(QApplication.translate("widget", "TextLabel", None, QApplication.UnicodeUTF8))
+		self.DateMod.setText(QApplication.translate("widget", "TextLabel"))
 		
-		self.label_comment.setText(QApplication.translate("widget", "Comment :", None, QApplication.UnicodeUTF8))
+		self.label_comment.setText(QApplication.translate("widget", "Comment :"))
 		# self.label_comment.setStyleSheet("""font-weight: bold;""")
-		self.comment.setText(QApplication.translate("widget", "TextLabel", None, QApplication.UnicodeUTF8))
-		# self.action_comboBox.setItemText(0, QApplication.translate("widget", "Action", None, QApplication.UnicodeUTF8))
-		# self.action_comboBox.setItemText(1, QApplication.translate("widget", "Open folder", None, QApplication.UnicodeUTF8))
-		# self.action_comboBox.setItemText(2, QApplication.translate("widget", "Copy path", None, QApplication.UnicodeUTF8))
+		self.comment.setText(QApplication.translate("widget", "TextLabel"))
+		# self.action_comboBox.setItemText(0, QApplication.translate("widget", "Action"))
+		# self.action_comboBox.setItemText(1, QApplication.translate("widget", "Open folder"))
+		# self.action_comboBox.setItemText(2, QApplication.translate("widget", "Copy path"))
 
 	def setThumbnail(self, imagePath):
 

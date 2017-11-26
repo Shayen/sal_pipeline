@@ -1,6 +1,6 @@
 # Global preference
 
-import os, sys, json
+import os, sys, json, shutil
 
 try:
 	from PySide2.QtCore import *
@@ -16,7 +16,7 @@ except ImportError:
 	from PySide import __version__
 
 try:
-	from sal_pipeline.src import env
+	from src import env
 	reload(env)
 	getEnv 	= env.getEnv()
 	modulepath = getEnv.modulePath()
@@ -25,7 +25,15 @@ except ImportError :
 	modulepath = '/'.join( os.path.dirname( os.path.abspath(__file__) ).split('\\')[:-2] )
 	print modulepath
 
-__app_version__ = '1.0'
+from src import utils
+reload(utils)
+
+import Global_preference_window_projectWidget 
+reload(Global_preference_window_projectWidget)
+
+
+projectWidget = Global_preference_window_projectWidget
+__app_version__ = '1.1'
 # v1.0 : init app
 
 def confirmDialog( parent=None, title ='title', message='message?' ):
@@ -69,7 +77,6 @@ class sal_globalPreference( QMainWindow ):
 
 		_configureFileName 				= 'configure.json'
 		self.databaseFilePath 			= "{0}/data/{1}".format(modulepath,_configureFileName)
-		self._projectWidgetUIFilename_ 	= 'Global_preference_window_projectWidget.ui'
 
 		_uiFilename_ = 'Global_preference_window.ui'
 		_uiFilePath_ = modulepath + '/ui/' + _uiFilename_		
@@ -155,7 +162,7 @@ class sal_globalPreference( QMainWindow ):
 
 	def pushButton_add_project_onclick(self):
 		''' add blank project setting widget to project listWidget '''
-		item_widget = self._load_projectWidget()
+		item_widget = projectWidget.Ui_Form(self)
 		item 		= QListWidgetItem(self.ui.listWidget_projectData)
 
 		item.setSizeHint( item_widget.sizeHint() )
@@ -174,39 +181,18 @@ class sal_globalPreference( QMainWindow ):
 			projectpath  = projectData['project_path']
 			is_active 	 = projectData['active']
 
-			item_widget = self._load_projectWidget()
+			item_widget = projectWidget.Ui_Form(self)
 			item 		= QListWidgetItem(self.ui.listWidget_projectData)
 
-			item_widget.lineEdit_projectName.setText(project_name)
-			item_widget.lineEdit_projectCode.setText(project_code)
-			item_widget.lineEdit_projectPath.setText(projectpath)
+			item_widget.setProjectName(project_name)
+			item_widget.setProjectCode(project_code)
+			item_widget.setProjectPath(projectpath)
 			item_widget.checkBox_active.setChecked(is_active)
 
 			item.setSizeHint( item_widget.sizeHint() )
 
 			self.ui.listWidget_projectData.addItem( item )
 			self.ui.listWidget_projectData.setItemWidget( item, item_widget)
-
-	def _load_projectWidget(self):
-		''' description '''
-		
-		_uiFilePath_ = modulepath + '/ui/' + self._projectWidgetUIFilename_		
-
-		# Check is ui file exists?
-		if not os.path.isfile( _uiFilePath_ ):
-			print( 'File ui not found : %s'%_uiFilePath_ )
-			return
-
-		# ---- LoadUI -----
-		loader = QUiLoader()
-		currentDir = os.path.dirname(__file__)
-		file = QFile( _uiFilePath_ )
-		file.open(QFile.ReadOnly)
-		ui = loader.load(file, parentWidget=self)
-		file.close()
-		# -----------------
-
-		return ui
 
 	def _loadDatabase(self):
 		""" read config data from './configure.json' """
@@ -316,11 +302,27 @@ class sal_globalPreference( QMainWindow ):
 
 		if is_success and is_confirm :
 
-
 			# skip when data not modified.
 			if data != self.database:
 				print( json.dumps(data,indent=2) )
 				json.dump(data, open(self.databaseFilePath ,'w'), indent = 2 )
+
+				#Create project folder
+				for prj in data.get("setting")["projects"].keys() :
+					project_path = data.get("setting")["projects"][prj]["project_path"]
+					
+					# If Directory not exists
+					try:
+						dirList = os.listdir(project_path )
+					except WindowsError:
+						# Pass
+						continue
+
+					zipPath = "%s/%s/%s"%(modulepath, "data", "projectSetup_template.zip")
+					dest 	= project_path
+					if dirList == [] or 'production' not in dirList :
+						utils.utils().unzip(zipPath,dest)
+						print("Create project Folder : "+str(dest))
 
 				print ("Update success.")
 

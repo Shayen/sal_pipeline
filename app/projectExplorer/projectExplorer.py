@@ -971,7 +971,7 @@ class salProjectExplorer( QMainWindow ):
 				return
 
 			else:
-				currentSubType = sequcurrentSubTypeence.text()
+				currentSubType = currentSubType.text()
 				currentAssets  = currentAssets.text()
 
 			# Description
