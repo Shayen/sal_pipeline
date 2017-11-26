@@ -6,15 +6,15 @@ try:
 	from PySide2 import QtGui
 	from PySide2 import QtWidgets
 	from PySide2 import QtUiTools
-	from PySide2 import __version__
-	import shiboken2
+	from PySide2 import __version__ as QtVersion
+	# import shiboken2
 
 except ImportError:
 	from PySide import QtCore
 	from PySide import QtGui
 	from PySide import QtUiTools
-	from PySide import __version__
-	import shiboken
+	from PySide import __version__ as QtVersion
+	# import shiboken
   
 import os, sys, zipfile
 
@@ -36,18 +36,54 @@ class windows(object):
 
 			return : input message, False if cancle
 		'''
+		# if
+		print ("Load : " + str(QtVersion))
+		print (str(QtVersion).split('.')[0])
 
-		if parent == None:
-			parent = QtGui.QWidget()
+		if int( str(QtVersion).split('.')[0] ) < 2 :
 
-		text, ok = QtGui.QInputDialog.getText(parent, title, message)
-		if ok:
-			pass
-		else:
-			text = False
-			print ('Cancle.')
+			if parent == None:
+				parent = QtGui.QWidget()
+
+			text, ok = QtGui.QInputDialog.getText(parent, title, message)
+			if ok:
+				pass
+			else:
+				text = False
+				print ('Cancle.')
+		else :
+
+			# Check open in maya
+			try:
+				import maya.cmds as cmds
+			except ImportError:
+				raise("Outside maya Skip.")
+				return
+
+			result = cmds.promptDialog(
+				title= title,
+				message= message,
+				button=['OK', 'Cancel'],
+				defaultButton='OK',
+				cancelButton='Cancel',
+				dismissString='Cancel')
+
+			if result == 'OK':
+				text = cmds.promptDialog(query=True, text=True)
+			else :
+				text = False
 
 		return text
+
+class IO:
+
+	def isListEmpty(mylist):
+
+		if mylist == []:
+			return False
+		else:
+			return True
+		# raise("Parameter must be LIST")
 
 class utils(object):
 
@@ -87,7 +123,7 @@ class utils(object):
 				   @ext 		: default 'jpg'
 
 			 return: path (if success)
-			 		 Flase[bool] (if false)
+					 Flase[bool] (if false)
 		"""
 
 		path = outputdir + '/' + filename
