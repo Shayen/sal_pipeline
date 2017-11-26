@@ -71,6 +71,14 @@ class getEnv(object):
 	def configure_filePath(self):
 		return self.data_dirPath() + '/' + self.configureFileName
 
+	def maya_userPrefDir(self):
+		''' Get maya prefs path '''
+		try:
+			import maya.cmds as cmds
+		except ImportError:
+			raise("Use in maya ONLY")
+		return cmds.internalVar(userPrefDir=True)
+
 	def update_config(self, data):
 		"""
 			update config data to configure.json file 

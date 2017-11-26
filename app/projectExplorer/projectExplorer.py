@@ -1,4 +1,4 @@
-import os, sys, subprocess, time, json
+import os, sys, subprocess, time, json, shutil
 from functools import partial
 
 try:
@@ -32,13 +32,14 @@ getEnv 	= env.getEnv()
 
 modulepath = getEnv.modulePath()
 
-__APP_version__ = '1.3'
+__APP_version__ = '1.4.1'
 # V1.0 : All function running well.
 # V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
 # V1.2 : Support multi project switching
 # V1.2.1: BugFix: copy project, shot, sequence template.
 # V1.3 : Add preference windows, add command "add asset"
 # V1.4 : Save recent opened path in window.
+# v1.4.1 : add action menu
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -179,6 +180,7 @@ class salProjectExplorer( QMainWindow ):
 
 		# Menu action
 		self.ui.actionPreference_setting.triggered.connect(self.actionPreference_setting_triggered)
+		self.ui.actionAdd_SAL_shelf.triggered.connect(self.actionAdd_SAL_shelf_triggered)
 
 	def _init_recentUiStep(self):
 		''' 
@@ -1165,6 +1167,25 @@ class salProjectExplorer( QMainWindow ):
 
 		from ..globalPreference import Global_preference
 		prefWin = Global_preference.sal_globalPreference(self)
+
+	def actionAdd_SAL_shelf_triggered(self):
+		''' add SAL pipeline shelf to shelf '''
+		userPrefsDir = getEnv.maya_userPrefDir()
+		shelfPath = "%s%s/%s"%(userPrefsDir,"shelves","shelf_SAL_pipeline.mel")
+
+		if not os.path.exists(shelfPath):
+			src = "{modulePath}/prefs".format(modulePath = modulepath)
+			shutil.copy(src = src , dst = userPrefsDir)
+
+		print("loadNewShelf (\"{filePath}\");".format(filePath = shelfPath))
+		mel.eval("loadNewShelf (\"{filePath}\");".format(filePath = shelfPath))
+
+		shelfFile = open(shelfPath,'r')
+		shelfCommd = shelfFile.read()
+		shelfFile.close()
+
+		mel.eval(shelfCommd)
+		mel.eval("shelf_SAL_pipeline;")
 
 
 #####################################################################

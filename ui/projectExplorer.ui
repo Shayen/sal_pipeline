@@ -408,6 +408,7 @@
      <string>Preference</string>
     </property>
     <addaction name="actionPreference_setting"/>
+    <addaction name="actionAdd_SAL_shelf"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuPreference"/>
@@ -435,6 +436,11 @@
   <action name="actionPreference_setting">
    <property name="text">
     <string>Preference editor</string>
+   </property>
+  </action>
+  <action name="actionAdd_SAL_shelf">
+   <property name="text">
+    <string>Add SAL shelf</string>
    </property>
   </action>
  </widget>
