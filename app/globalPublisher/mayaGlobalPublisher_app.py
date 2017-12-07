@@ -40,8 +40,9 @@ core = mayaGlobalPublisher_core.mayaGlobalPublisher_core()
 getEnv 	= env.getEnv()
 modulepath = getEnv.modulePath()
 
-__app_version__ = '0.1'
+__app_version__ = '0.2'
 # V0.1
+# V0.2 : support Export GPU, Bounding box, Scene assembly
 
 try:
 	myInfo = env.getInfo()
@@ -75,10 +76,17 @@ class mayaGlobalPublisher( QMainWindow ):
 		file.close()
 		# -----------------
 
+		self.all_Geo_Option = [	"GPU_checkBox", 
+								"boundingBox_checkBox",
+								"obj_checkBox",
+								"sceneAssembly_checkBox" ]
+
 		self.ui.setWindowTitle('Maya global publisher v.' + str(__app_version__))
 
 		self._initUI()
 		self._initConnect()
+		self._setupOption_byTask()
+
 		self.ui.show()
 
 	def _initUI(self):
@@ -89,6 +97,7 @@ class mayaGlobalPublisher( QMainWindow ):
 
 		# FUTURE : Query configyration from config file.
 		self.ui.comboBox_pipelineStep.addItem("model")
+		self.ui.comboBox_pipelineStep.addItem("rig")
 
 		# capture viewport
 		self.setThumbnail( core.captureViewport() )
@@ -96,6 +105,9 @@ class mayaGlobalPublisher( QMainWindow ):
 	def _initConnect(self):
 		self.ui.pushButton_cancel.clicked.connect(self.closeWindow)
 		self.ui.pushButton_publish.clicked.connect(self._doPublish)
+
+		self.ui.comboBox_pipelineStep.activated.connect(self._setupOption_byTask)
+		# QObject.connect(self.ui.comboBox_pipelineStep, SIGNAL("currentIndexChanged(arg__1)"), self._setupOption_byTask)
 
 	def setThumbnail(self, imagePath):
 
@@ -107,6 +119,52 @@ class mayaGlobalPublisher( QMainWindow ):
 		pixmap = QPixmap( imagePath )
 		pixmap = pixmap.scaledToWidth(240)
 		self.ui.label_imagePlaceHolder.setPixmap(pixmap)
+
+	def _setupOption_byTask(self):
+		'''
+		change TaskOption by task change
+		'''
+		step = self.ui.comboBox_pipelineStep.currentText()
+
+		_model_option = [ 	"GPU_checkBox",
+							"boundingBox_checkBox",
+							"obj_checkBox",
+							"sceneAssembly_checkBox"]
+
+		if not step :
+			# get current step
+			step = myInfo.get_task()
+
+		print "current step : %s"%(step)
+
+		# setup option
+
+		if step == 'model':
+
+			# show option for model
+			for option_ui in _model_option :
+			 	eval( "self.ui.{option_ui}.show()".format( option_ui = option_ui ) )
+			 	eval( "self.ui.{option_ui}.setCheckState(Qt.Checked)".format( option_ui = option_ui ) )
+
+		elif step == 'rig' :
+			self._hideAllOption()
+
+		elif step == 'texture':
+			self._hideAllOption()
+
+		else :
+			self._hideAllOption()
+			return False
+
+	def _showOption(self):
+		pass
+
+	def _hideAllOption(self):
+		'''hide all option'''
+
+		for option_ui in self.all_Geo_Option :
+			eval( "self.ui.{option_ui}.hide()".format(option_ui = option_ui ) )
+			eval( "self.ui.{option_ui}.setCheckState(Qt.Unchecked)".format( option_ui = option_ui ) )
 
 	def _doPublish(self):
 		''' publish file '''
@@ -136,6 +194,38 @@ class mayaGlobalPublisher( QMainWindow ):
 			# -- !!warning!! : user must be admin to group.
 			data = {}
 			post_result = core.post_toFacebook(data = data)
+
+		# **** EXPORT PIPELINE CACHE ***
+
+		# Export GPU
+		if self.isOptionCheck("GPU_checkBox"):
+			core.export_GPUCache()
+			self.update_Status("Export GPU complete.")
+
+		# Export BBox
+		if self.isOptionCheck("boundingBox_checkBox"):
+			core.export_objBBox()
+			self.update_Status("Export Bounding box complete.")
+
+		# Export Scene Assembly
+		if self.isOptionCheck("sceneAssembly_checkBox"):
+			core.export_sceneAssembly()
+			self.update_Status("Create Scene assembly complete.")
+
+		self.update_Status("===== Publish complete =====")
+
+	def isOptionCheck(self, QcheckBox_uiName):
+		'''return check stage'''
+
+		try :
+			is_checked = eval("self.ui.{option_ui}.checkState()".format(option_ui = QcheckBox_uiName))
+
+		except AttributeError as e :
+			# raise(e)
+			print (e)
+			return False
+
+		return is_checked
 
 	def update_Status(self, message):
 		item = QListWidgetItem(message)
