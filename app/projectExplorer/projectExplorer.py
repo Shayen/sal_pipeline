@@ -32,7 +32,7 @@ getEnv 	= env.getEnv()
 
 modulepath = getEnv.modulePath()
 
-__APP_version__ = '1.4.1'
+__APP_version__ = '1.4.2'
 # V1.0 : All function running well.
 # V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
 # V1.2 : Support multi project switching
@@ -40,6 +40,7 @@ __APP_version__ = '1.4.1'
 # V1.3 : Add preference windows, add command "add asset"
 # V1.4 : Save recent opened path in window.
 # v1.4.1 : add action menu
+# v1.4.2 : Bug fix, Maya scene list saw another file type.
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -510,7 +511,7 @@ class salProjectExplorer( QMainWindow ):
 					return
 
 				# list all dir, ignore 'edits' folder
-				dirList = [i for i in os.listdir(path) if i != 'edits']
+				dirList = [i for i in os.listdir(path) if i != 'edits' and not i.startswith(".")]
 
 				for i in dirList:
 					item = QListWidgetItem(i)
@@ -540,7 +541,7 @@ class salProjectExplorer( QMainWindow ):
 					return
 
 				# list all dir, ignore 'edits' folder
-				dirList = [i for i in os.listdir(path) if i != 'edits']
+				dirList = [i for i in os.listdir(path) if i != 'edits' and not i.startswith(".") ]
 
 				for i in dirList:
 					item = QListWidgetItem(i)
