@@ -104,7 +104,7 @@ class mayaAssetImpoter( QMainWindow ):
 		self.ui.project_comboBox.setCurrentIndex( self.currentProject )
 
 		# Setup Environment
-		getInfo = env.getInfo(projectName = self.currentProject )
+		getInfo = env.getInfo(projectName = project )
 
 		return projectList
 
