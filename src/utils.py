@@ -141,6 +141,7 @@ class utils(object):
 
 		try:
 			view.readColorBuffer(image, True)
+			image.resize(448,252)
 			image.writeToFile(path, ext)
 
 			print ('Capture success : ' + path )
