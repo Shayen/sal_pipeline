@@ -53,10 +53,9 @@ def app_mayaGlobalPublisher():
 	globalPublisher.run()
 
 def app_assetImporter():
-	# from sal_pipeline.app import assetImporter
-	# reload(assetImporter)
-	# assetImporter.run()
-	pass
+	from sal_pipeline.app import assetImporter
+	reload(assetImporter)
+	assetImporter.run()
 
 if __name__ == '__main__':
 	app_projectExplorer()
