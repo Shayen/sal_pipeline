@@ -12,7 +12,7 @@ def create_sceneAssembly( workspace, assetName, pub_filepath, output_path ):
 
 	loadSceneAssemblyPlugin()
 
-	pub_filepath = pub_filepath.replace(workspace, '')
+	# pub_filepath = pub_filepath.replace(workspace, '')
 	gpu_filepath = "scenes/pub/%s_gpu.abc"%(assetName)
 	box_filepath = "scenes/pub/%s_bbox.ma"%(assetName)
 	
@@ -42,7 +42,7 @@ def create_sceneAssembly( workspace, assetName, pub_filepath, output_path ):
 							createRepresentation='Cache',
 							repName	= "Gpu"  , 
 							repLabel= "GPU", 
-							input	= gpu_filepath)
+							input	= os.path.join(workspace,gpu_filepath))
 
 		# Create BBox representation
 		if isFileExists( os.path.join(workspace,box_filepath) ):
@@ -52,17 +52,17 @@ def create_sceneAssembly( workspace, assetName, pub_filepath, output_path ):
 							createRepresentation='Scene',
 							repName	= "BBox"  , 
 							repLabel= "BBOX", 
-							input	= box_filepath)
+							input	= os.path.join(workspace,box_filepath))
 
 		# Create Render representation
-		if isFileExists( os.path.join(workspace,pub_filepath) ):
-		
+		if isFileExists( pub_filepath ):
+	
 			cmds.assembly(	assembly_name , 
 							edit	= True   , 
 							createRepresentation='Scene',
 							repName	= "Render"  , 
-							repLabel= "Render_md", 
-							input	= pub_filepath )
+							repLabel= "Render", 
+							input	= os.path.join(workspace,pub_filepath) )
 
 		# Save the file    
 		cmds.file( rename = output_path )

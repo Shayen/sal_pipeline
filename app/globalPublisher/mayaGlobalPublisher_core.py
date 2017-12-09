@@ -94,7 +94,7 @@ class mayaGlobalPublisher_core(object):
 		if myInfo.get_task() == 'model' :
 			dest 		= self._get_workSpace() + '/scenes/pub'
 			filename 	= myInfo.get_name() + "_gpu"
-			result = pubUtil.exportGpuCache("Geo_grp", dest, filename)
+			result 		= pubUtil.exportGpuCache("Geo_grp", dest, filename)
 
 			print ("Export cache : " + result)
 
@@ -102,19 +102,23 @@ class mayaGlobalPublisher_core(object):
 		'''Export object boundingbox'''
 		# Export bounding box
 		if myInfo.get_task() == 'model' :
-			#Duplicate Object
-			myOBJ = cmds.duplicate("Geo_grp")
 
-			cmds.select(myOBJ[0])
+			mayapy_path = os.environ["MAYA_LOCATION"] + "/bin/mayapy.exe"
+			command_file= myEnv.src_dirPath() + '/createBoundingBox.py'
 			assetName 	= myInfo.get_name()
-			my_BBox 	= cmds.geomToBBox( name = assetName, nameSuffix="_BBox", single=True )
 			dest 		= self._get_workSpace() + '/scenes/pub/'
-			filename 	= assetName + '_bbox.ma'
-			result = cmds.file( dest + filename, type='mayaAscii',exportSelected=True)
-
-			# Delete Object
-			cmds.delete( my_BBox[0].split(":")[1] )
-			print ("Export Bounding box : " + filename)
+			fileName 	= cmds.file(q=True,sn=True)
+			output_file = dest +assetName + '_bbox.ma'
+			
+			command = "{program} {command_file} {workspace} {fileName} {assetName} {output_path}".format(	
+																					program 	= mayapy_path,
+																					command_file= command_file,
+																					workspace 	= self._get_workSpace(),
+																					fileName	= fileName,
+																					assetName	= myInfo.get_name(),
+																					output_path	= output_file)
+			subprocess.call(command)
+			print ("Create BBox : " + output_file )
 			return True
 
 	def export_sceneAssembly(self):
