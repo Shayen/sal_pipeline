@@ -1,4 +1,4 @@
-import os, sys, json, socket
+import os, sys, json, socket, shutil
 import maya.mel as mel
 
 modulePath = '/'.join( os.path.dirname( os.path.abspath(__file__) ).split('\\')[:-1] )
@@ -56,6 +56,9 @@ class getEnv(object):
 	def log_dirPath(self):
 		return self._modulePath_ + '/log'
 
+	def app_dirPath(self):
+		return self._modulePath_ + '/app'
+
 	def shotTemplate_zipPath(self):
 		return self.data_dirPath() + '/' + self.shotTemplateFileName
 
@@ -67,6 +70,14 @@ class getEnv(object):
 
 	def configure_filePath(self):
 		return self.data_dirPath() + '/' + self.configureFileName
+
+	def maya_userPrefDir(self):
+		''' Get maya prefs path '''
+		try:
+			import maya.cmds as cmds
+		except ImportError:
+			raise("Use in maya ONLY")
+		return cmds.internalVar(userPrefDir=True)
 
 	def update_config(self, data):
 		"""
@@ -87,8 +98,26 @@ class getEnv(object):
 		
 	def _read_globalConfig(self):
 		""" read config data from './configure.json' """
-		data = json.load( open( self.configure_filePath(), 'r') )
-		return data
+		try:
+			data = json.load( open( self.configure_filePath(), 'r') )
+			return data
+		except IOError:
+			#  configure_default.json
+			src = self.data_dirPath() + '/configure_default.json'
+			dst = self.data_dirPath() + '/configure.json'
+			shutil.copy2(src, dst)
+
+			if os.path.exists(dst):
+				from app.globalPreference import Global_preference as global_pref
+				
+				app  = QApplication(sys.argv) 
+				form = global_pref.sal_globalPreference()
+				app.exec_()
+			else:
+				print ("Cannot open config file : " + dst )
+				return {}
+
+			raise("please restart tool.")
 
 	def _get_Username(self):
 		'''
