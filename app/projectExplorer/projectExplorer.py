@@ -447,6 +447,8 @@ class salProjectExplorer( QMainWindow ):
 					self.ui.listWidget_object_center.addItem( item )
 					self.ui.listWidget_object_center.setItemWidget( item, item_widget)
 
+					QApplication.processEvents()
+
 			# Tab is shots
 			else:
 
