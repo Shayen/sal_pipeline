@@ -64,5 +64,125 @@ global proc shelf_SAL_pipeline () {
         -commandRepeatable 1
         -flat 1
     ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "from pt_RSMultiMatteTool import rsMM_app\nreload(rsMM_app)" 
+        -enableBackground 0
+        -align "center" 
+        -label "from pt_RSMultiMatteTool import rsMM_app\nreload(rsMM_app)" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "P:/_studioTool/prefs/icons/pt_multimatte.png" 
+        -image1 "P:/_studioTool/prefs/icons/pt_multimatte.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "from RS_MultimatteTool import rsMM_app\nreload(rsMM_app)" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Create geo group" 
+        -enableBackground 0
+        -align "center" 
+        -label "import maya.cmds as cmds\n\ngeometry_group_name = \"Geo_grp\"\nmysel ..." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "P:/_studioTool/prefs/icons/GeoGroup.png" 
+        -image1 "P:/_studioTool/prefs/icons/GeoGroup.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import maya.cmds as cmds\n\ngeometry_group_name = \"Geo_grp\"\nmysel = cmds.ls(sl=True)\nis_emptyGrp = True\n\nif not cmds.objExists( geometry_group_name ) :\n    \n    if mysel :\n        is_emptyGrp = False\n   \n    cmds.group( n = geometry_group_name, em = is_emptyGrp )" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline import salPipeline\nreload(salPipeline)\n\nsalPipeline.app_assetImporter()" 
+        -enableBackground 0
+        -align "center" 
+        -label "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pi..." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "P:/_studioTool/prefs/icons/assetImporter.png" 
+        -image1 "P:/_studioTool/prefs/icons/assetImporter.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline import salPipeline\nreload(salPipeline)\n\nsalPipeline.app_assetImporter()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "import maya.cmds as cmds\n\n_windowObjName   = \"sceneAssembly_control\"\n_windowTitleName = \"Scene Assembly controller\"\n\nif cmds.window( _windowObjName, exists=True ):\n\tcmds.deleteUI(_windowObjName)\n\ndef get_assemblyReference():\n\treturn cmds.ls(type = \"assemblyReference\")\n\ndef setActiveRep( assemblyNode, name ) : \n\t''' set active representations ''' \n\tcmds.assembly(assemblyNode, e = True, active = name)\n\ndef showAllLocator(*args):\n\t'''\n\t# Result: [u'myLocator', u'Gpu', u'BBox'] # \t\n\t'''\n\tall_ref = get_assemblyReference()\n\tfor node in all_ref :\n\t\tsetActiveRep(node, \"myLocator\")\n\ndef showAllGpu(*args):\n\t'''\n\t# Result: [u'myLocator', u'Gpu', u'BBox'] # \t\n\t'''\n\tall_ref = get_assemblyReference()\n\tfor node in all_ref :\n\t\tsetActiveRep(node, \"Gpu\")\n\ndef showAllBBox(*args):\n\t'''\n\t# Result: [u'myLocator', u'Gpu', u'BBox'] # \t\n\t'''\n\tall_ref = get_assemblyReference()\n\tfor node in all_ref :\n\t\tsetActiveRep(node, \"BBox\")\n\t\ndef run():\n\n\tcmds.window(_windowObjName, title = _windowTitleName)\n\tcmds.columnLayout(adj=True,rowSpacing=2)\n\tcmds.text(\"\\nScene assembly controller\\n\")\n\tcmds.button(\"Show all Locator\", h = 40, c = showAllLocator )\n\tcmds.button(\"Show all BBox\", \th = 40, c = showAllGpu )\n\tcmds.button(\"show all GPU\", \th = 40, c = showAllBBox )\n\tcmds.setParent(\"..\")\n\t\n\tcmds.showWindow( _windowObjName )\n\t\n\tcmds.window( _windowObjName, e=True, w=100, h = 100 )\n\nrun()" 
+        -enableBackground 0
+        -align "center" 
+        -label "import maya.cmds as cmds\n\n_windowObjName   = \"sceneAssembly_cont..." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "P:/_studioTool/prefs/icons/sceneAssemblyController.png" 
+        -image1 "P:/_studioTool/prefs/icons/sceneAssemblyController.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline.app import assembly_controller\nreload(assembly_controller)\n\nassembly_controller.run()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
 
 } 
