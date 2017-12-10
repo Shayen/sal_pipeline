@@ -1,0 +1,3 @@
+[submodule "app/RS_MultimatteTool"]
+	path = app/RS_MultimatteTool
+	url = https://github.com/Shayen/RS_MultimatteTool.git
