@@ -89,7 +89,7 @@ global proc shelf_SAL_pipeline () {
         -style "iconOnly" 
         -marginWidth 1
         -marginHeight 1
-        -command "from RS_MultimatteTool import rsMM_app\nreload(rsMM_app)" 
+        -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline.app.RS_MultimatteTool import rsMM_app\nreload(rsMM_app)\n" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
