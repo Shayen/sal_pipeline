@@ -172,6 +172,7 @@ class mayaAssetImpoter( QMainWindow ):
 				print ("Path not exist : " + definition_Path)
 				return
 
+			print ("import : " + definition_Path)
 			result = cmds.assembly(name = referenceNode_name + "_AR", type='assemblyReference')
 			cmds.setAttr(result+".definition", definition_Path, type="string")
 

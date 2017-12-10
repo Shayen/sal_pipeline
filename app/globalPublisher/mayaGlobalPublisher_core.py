@@ -30,6 +30,8 @@ class mayaGlobalPublisher_core(object):
 		new_fileName 	= myInfo.get_nextVersion(filename = True )
 		currentPath 	= os.path.dirname( cmds.file(q=True, sn=True) )
 
+		result = "None"
+
 		# save increment
 		cmds.file( rename='%s/%s'%( currentPath, new_fileName ) )
 		result =  cmds.file( save=True, type='mayaAscii' )
@@ -40,7 +42,7 @@ class mayaGlobalPublisher_core(object):
 		thumbnail_filename 	= myInfo.get_fileName(ext = False) + '.jpg'
 
 		shutil.copy2(self._pubThumbnail_Path, '/'.join([thumbnail_path,thumbnail_filename]))
-		print( "# Capture thumbnail : %s"%( thumbnail_filename) )
+		print( "# Capture thumbnail : %s"%(   '/'.join([thumbnail_path,thumbnail_filename])) )
 
 		return result
 
@@ -117,9 +119,20 @@ class mayaGlobalPublisher_core(object):
 																					fileName	= fileName,
 																					assetName	= myInfo.get_name(),
 																					output_path	= output_file)
-			subprocess.call(command)
-			print ("Create BBox : " + output_file )
-			return True
+			# subprocess.call(command)
+			# print ("Create BBox : " + output_file )
+
+			maya = subprocess.Popen(command ,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			out,err = maya.communicate()
+			exitcode = maya.returncode
+			if str(exitcode) != '0':
+				print(err)
+				print 'error opening file: %s' % (output_file)
+			else:
+				# print 'added new layer %s to %s' % (out, output_file)
+				print out
+				return True
+			# return True
 
 	def export_sceneAssembly(self):
 		'''Create scene Assembly'''
@@ -135,9 +148,18 @@ class mayaGlobalPublisher_core(object):
 																				assetName	= myInfo.get_name(),
 																				pub_filepath= pub_filepath,
 																				output_path	= output_file)
-		subprocess.call(command)
-		
-		print ("Create Assembly : " + output_file )
+		# subprocess.call(command)
+
+		maya = subprocess.Popen(command ,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		out,err = maya.communicate()
+		exitcode = maya.returncode
+		if str(exitcode) != '0':
+			print(err)
+			print 'error opening file: %s' % (output_file)
+		else:
+			# print 'added new layer %s to %s' % (out, output_file)
+			print out
+			return True
 
 	def post_toFacebook(self,data = {}):
 		''' post update to facebook group '''

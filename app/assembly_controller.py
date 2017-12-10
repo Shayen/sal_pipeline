@@ -14,7 +14,10 @@ def get_assemblyReference():
 
 def setActiveRep( assemblyNode, name ) : 
 	''' set active representations ''' 
-	cmds.assembly(assemblyNode, e = True, active = name)
+	try :
+		cmds.assembly(assemblyNode, e = True, active = name)
+	except RuntimeError as e :
+		print ("skip : " + assemblyNode)
 
 def showAllLocator(*args):
 	'''

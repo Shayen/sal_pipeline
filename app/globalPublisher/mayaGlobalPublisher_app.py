@@ -169,6 +169,8 @@ class mayaGlobalPublisher( QMainWindow ):
 	def _doPublish(self):
 		''' publish file '''
 
+		print ("===== Publish Start =====")
+
 		self.ui.listWidget_allStatus.clear()
 		is_postToFacebook = False 
 		# Check save state::
@@ -230,6 +232,7 @@ class mayaGlobalPublisher( QMainWindow ):
 	def update_Status(self, message):
 		item = QListWidgetItem(message)
 		self.ui.listWidget_allStatus.addItem(item)
+		print (message)
 
 	def closeWindow(self):
 		clearUI()
