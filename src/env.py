@@ -418,27 +418,25 @@ class getInfo(object):
 		# return thumbnail_path
 
 		thumbnail_path = '%s/%s'%(workspace, '_thumbnail')
+		missThumbnail_path  = self.env.data_dirPath() + '/thumbnail_miss.jpg'
 
 		# // check _thumbnail path exists
 		if not os.path.exists(thumbnail_path):
 			# print (thumbnail_path + ' : not exists')
-			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
-			return thumbnail_path
+			return missThumbnail_path
 
 		# // check number of image file
 		all_thumbnail_files = os.listdir( '%s/%s'%( workspace, '_thumbnail') )
 		if all_thumbnail_files == []:
 			# print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
-			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
-			return thumbnail_path
+			return missThumbnail_path
 
 		else:
 			if perfile:
 				if os.path.exists(thumbnail_path+'/'+filename):
 					thumbnail_path = thumbnail_path+'/'+filename
 				else:
-					thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
-					return thumbnail_path
+					return missThumbnail_path
 			else:
 				thumbnail_file = sorted( all_thumbnail_files )[-1] 
 				thumbnail_path += '/%s'%(thumbnail_file)
@@ -446,7 +444,7 @@ class getInfo(object):
 		# print ('>> : ' + thumbnail_path)
 		if not os.path.exists( thumbnail_path ) :
 			print (thumbnail_path + ' : not exists')
-			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
+			thumbnail_path = missThumbnail_path
 
 		return thumbnail_path
 
