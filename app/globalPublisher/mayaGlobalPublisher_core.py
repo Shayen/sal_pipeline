@@ -37,6 +37,7 @@ class mayaGlobalPublisher_core(object):
 		result =  cmds.file( save=True, type='mayaAscii' )
 
 		# set Thumbnail +
+		myInfo.filename = cmds.file( q=True, sn=True, shn=True )
 		workspace 			= self._get_workSpace()
 		thumbnail_path 		= workspace + '/_thumbnail'
 		thumbnail_filename 	= myInfo.get_fileName(ext = False) + '.jpg'

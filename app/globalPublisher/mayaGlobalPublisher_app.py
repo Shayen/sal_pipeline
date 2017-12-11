@@ -98,6 +98,10 @@ class mayaGlobalPublisher( QMainWindow ):
 		# FUTURE : Query configyration from config file.
 		self.ui.comboBox_pipelineStep.addItem("model")
 		self.ui.comboBox_pipelineStep.addItem("rig")
+		self.ui.comboBox_pipelineStep.addItem("texture")
+
+		# Get current task
+		self._setCurrentTask()
 
 		# capture viewport
 		self.setThumbnail( core.captureViewport() )
@@ -120,6 +124,18 @@ class mayaGlobalPublisher( QMainWindow ):
 		pixmap = pixmap.scaledToWidth(240)
 		self.ui.label_imagePlaceHolder.setPixmap(pixmap)
 
+	def _setCurrentTask(self):
+		''' set current task to optionbox when app start up '''
+		current_task = myInfo.get_task()
+
+		try:
+			currentIndx = self.ui.comboBox_pipelineStep.findText(current_task)
+		except :
+			print ( "Cannot set up current step : " +  current_task )
+			return False
+
+		self.ui.comboBox_pipelineStep.setCurrentIndex(currentIndx)
+
 	def _setupOption_byTask(self):
 		'''
 		change TaskOption by task change
@@ -130,6 +146,8 @@ class mayaGlobalPublisher( QMainWindow ):
 							"boundingBox_checkBox",
 							"obj_checkBox",
 							"sceneAssembly_checkBox"]
+
+		_texture_option	= []
 
 		if not step :
 			# get current step
