@@ -187,7 +187,7 @@ class mayaAssetImpoter( QMainWindow ):
 				cmds.file( asset_pubDir + '/' + pub_fileName[0], r=True )
 
 			elif len(pub_fileName) > 1 :
-				ui_choosePubFile(pub_fileName, pub_fileName)
+				ui_choosePubFile(pub_fileName, scenePath = asset_pubDir)
 
 			else : 
 				print "Not have any publish file."
@@ -216,8 +216,11 @@ def ui_choosePubFile(files, scenePath):
 			clearUI_ChoosePubFile()
 
 	def import_File(*args):
-		fileName = cmds.optionMenu( "pubFile_optionMenu", q=True,  v=True )
-		print os.path.join(scenePath,fileName)
+
+		fileName = cmds.optionMenu( "pubFile_optionMenu", q=True,  v=True)
+		print scenePath
+		print fileName
+		print (scenePath+'/'+fileName)
 		cmds.file( os.path.join(scenePath,fileName), r=True )
 
 	#-------------------
