@@ -9,6 +9,11 @@ maya.standalone.initialize(name='python')
 
 def export_objBBox( workspace, fileName, assetName, output_path ):
 	# Start Maya in batch mode
+
+	print ("\n") # New line
+	print ("_"*32)
+	print ("Building Bounding box...")
+
 	if not isFileExists(fileName):
 		print ("file not found : " + fileName )
 		time.sleep(10)
@@ -22,20 +27,19 @@ def export_objBBox( workspace, fileName, assetName, output_path ):
 		# convert object to BBox
 		# cmds.select("Geo_grp")
 		assetName 	= assetName
-		# my_BBox 	= cmds.geomToBBox( name = assetName, nameSuffix="_BBox", single=True )
 		my_BBox		= create_BBox( obj="Geo_grp", name=assetName, nameSuffix="_BBox" )
 		filename 	= assetName + '_bbox.ma'
 		result 		= cmds.file( output_path, f=True, type='mayaAscii',exportSelected=True)
 
 		# Export Object
-		print ("Export Bounding box : " + filename)
+		print ("\t-Export Bounding box : " + filename)
 
 	except Exception as e :
 		print(e)
 		traceback.print_exc()
 		time.sleep(10)
 
-	print ("Create BoundingBox success : " + output_path )
+	print ("\nCreate BoundingBox success : " + output_path )
 	time.sleep(0.5)
 
 	uninitialize_maya()
