@@ -33,14 +33,15 @@ getEnv 	= env.getEnv()
 modulepath = getEnv.modulePath()
 
 __APP_version__ = '1.4.2'
-# V1.0 : All function running well.
-# V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
-# V1.2 : Support multi project switching
-# V1.2.1: BugFix: copy project, shot, sequence template.
-# V1.3 : Add preference windows, add command "add asset"
-# V1.4 : Save recent opened path in window.
+# V1.0.0 : All function running well.
+# V1.1.0 : Support pySide2, not list "_thummbnail folder in sequence list"
+# V1.2.0 : Support multi project switching
+# V1.2.1 : BugFix: copy project, shot, sequence template.
+# V1.3.0 : Add preference windows, add command "add asset"
+# V1.4.0 : Save recent opened path in window.
 # v1.4.1 : add action menu
 # v1.4.2 : Bug fix, Maya scene list saw another file type.
+# V1.4.3 : Bug fix, Asset list Exclude system files.
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -315,6 +316,7 @@ class salProjectExplorer( QMainWindow ):
 
 		if section == 'project':
 			# // list all project
+			self.setup_projectCombobox()
 			result = True
 
 		# // Update task_list
@@ -427,6 +429,10 @@ class salProjectExplorer( QMainWindow ):
 
 					workspace = '%s/%s'%( path, mytype) 
 					# thumbnail_path  "C:/Users/siras/Pictures/14936969_1362716400413980_313115908_n.jpg"
+
+					# skip type : files
+					if os.path.isfile(workspace):
+						continue;
 
 					thumbnail_path = getInfo.getThumbnail(workspace = workspace, filename = mytype)
 					datemodified   = time.strftime("%d/%m/%Y %H:%M %p",time.gmtime( os.path.getmtime(workspace) ))
