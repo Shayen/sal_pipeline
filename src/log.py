@@ -30,7 +30,7 @@ class logger():
 
 		# create a file handler
 		loggerPath = '{logDir}/{tool}/{user}/{logFileName}.log'.format(logDir = env.log_dirPath(), tool=name,user=env.user, logFileName = logFileName)
-		self._checkLogFolder(name)
+		self._checkLogFolder(name, env.user)
 		handler = logging.FileHandler( loggerPath )
 		handler.setLevel(logging.INFO)
 
