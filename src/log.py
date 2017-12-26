@@ -29,7 +29,7 @@ class logger():
 		logFileName = str (datetime.date.today() )
 
 		# create a file handler
-		loggerPath = '{logDir}/{tool}/{logFileName}.log'.format(logDir = env.log_dirPath(), tool=name, logFileName = logFileName)
+		loggerPath = '{logDir}/{tool}/{user}/{logFileName}.log'.format(logDir = env.log_dirPath(), tool=name,user=env.user, logFileName = logFileName)
 		self._checkLogFolder(name)
 		handler = logging.FileHandler( loggerPath )
 		handler.setLevel(logging.INFO)
@@ -58,7 +58,7 @@ class logger():
 				each.flush()
 				each.close()
 
-	def _checkLogFolder(self, tool):
+	def _checkLogFolder(self, tool, user):
 		''' Checking log folder '''
 
 		logPath = env.log_dirPath()
@@ -69,6 +69,10 @@ class logger():
 		if not os.path.exists(logPath + '/' + tool) :
 			os.mkdir(logPath + '/' + tool)
 			print ("Create Directory : " + logPath + '/' + tool)
+
+		if not os.path.exists(logPath + '/' + tool + '/' + user) :
+			os.mkdir(logPath + '/' + tool + '/' + user)
+			print ("Create Directory : " + logPath + '/' + tool + '/' + user)
 
 
 	def getLogger(self):
