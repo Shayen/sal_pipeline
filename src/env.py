@@ -1,5 +1,5 @@
 import os, sys, json, socket, shutil
-import maya.mel as mel
+# import maya.mel as mel
 
 modulePath = '/'.join( os.path.dirname( os.path.abspath(__file__) ).split('\\')[:-1] )
 
