@@ -162,18 +162,5 @@ class mayaGlobalPublisher_core(object):
 			print out
 			return True
 
-	def post_toFacebook(self,data = {}):
-		''' post update to facebook group '''
-
-		from sal_pipeline.src import facepy
-		# repo : https://github.com/jgorset/facepy
-
-		#
-		#
-		result = {}
-
-		return result
-
 if __name__ == '__main__':
 	app =mayaGlobalPublisher_core()
-	app.post_toFacebook()
