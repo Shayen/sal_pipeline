@@ -29,8 +29,10 @@ except ImportError:
 # project libs import
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
+from sal_pipeline.src import log
 reload(utils)
 reload(env)
+reload(log)
 
 # tool libs import
 import mayaGlobalPublisher_core 
@@ -40,9 +42,14 @@ core = mayaGlobalPublisher_core.mayaGlobalPublisher_core()
 getEnv 	= env.getEnv()
 modulepath = getEnv.modulePath()
 
+logger = log.logger("globalPublisher")
+logger = logger.getLogger()
+
 __app_version__ = '0.2'
 # V0.1
-# V0.2 : support Export GPU, Bounding box, Scene assembly
+# V0.2.0 : support Export GPU, Bounding box, Scene assembly
+# V0.3.0 : Add texture step
+# V1.0.0 : Add logger
 
 try:
 	myInfo = env.getInfo()
@@ -50,7 +57,7 @@ try:
 except IndexError :
 	e_msg = "## This file is not in pipeline. please check your file. ##\n"
 	print('_'*64)
-	print(e_msg)
+	logger.error(e_msg)
 
 	raise IOError(e_msg)
 
@@ -153,7 +160,7 @@ class mayaGlobalPublisher( QMainWindow ):
 			# get current step
 			step = myInfo.get_task()
 
-		print "current step : %s"%(step)
+		logger.info( "current step : %s"%(step))
 
 		# setup option
 
@@ -187,7 +194,7 @@ class mayaGlobalPublisher( QMainWindow ):
 	def _doPublish(self):
 		''' publish file '''
 
-		print ("===== Publish Start =====")
+		logger.info ("===== Publish Start =====")
 
 		self.ui.listWidget_allStatus.clear()
 		is_postToFacebook = False 
@@ -242,7 +249,7 @@ class mayaGlobalPublisher( QMainWindow ):
 
 		except AttributeError as e :
 			# raise(e)
-			print (e)
+			logger.error (e)
 			return False
 
 		return is_checked
@@ -250,7 +257,7 @@ class mayaGlobalPublisher( QMainWindow ):
 	def update_Status(self, message):
 		item = QListWidgetItem(message)
 		self.ui.listWidget_allStatus.addItem(item)
-		print (message)
+		logger.info (message)
 
 	def closeWindow(self):
 		clearUI()

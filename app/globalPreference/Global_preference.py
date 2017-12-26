@@ -23,7 +23,7 @@ try:
 
 except ImportError :
 	modulepath = '/'.join( os.path.dirname( os.path.abspath(__file__) ).split('\\')[:-2] )
-	print modulepath
+	print (modulepath)
 
 from src import utils
 reload(utils)
@@ -31,10 +31,16 @@ reload(utils)
 import Global_preference_window_projectWidget 
 reload(Global_preference_window_projectWidget)
 
+from src import log
+reload(log)
+
+logger = log.logger("globalPreference")
+logger = logger.getLogger()
 
 projectWidget = Global_preference_window_projectWidget
-__app_version__ = '1.1'
-# v1.0 : init app
+__app_version__ = '1.1.1'
+# v1.0.0 : init app
+# V1.1.1 : add logger
 
 def confirmDialog( parent=None, title ='title', message='message?' ):
 	'''  
@@ -75,6 +81,8 @@ class sal_globalPreference( QMainWindow ):
 		""" Description """
 		QMainWindow.__init__(self, parent)
 
+		logger.info('Global preference v.' + str(__app_version__))
+
 		_configureFileName 				= 'configure.json'
 		self.databaseFilePath 			= "{0}/data/{1}".format(modulepath,_configureFileName)
 
@@ -83,7 +91,7 @@ class sal_globalPreference( QMainWindow ):
 
 		# Check is ui file exists?
 		if not os.path.isfile( _uiFilePath_ ):
-			print( 'File ui not found : %s'%_uiFilePath_ )
+			logger.info( 'File ui not found : %s'%_uiFilePath_ )
 			return
 
 		# ---- LoadUI -----
@@ -266,7 +274,7 @@ class sal_globalPreference( QMainWindow ):
 
 			# check blank field
 			if project_name == "" or project_code == "" or project_path == "" :
-				print ("Please complete all project infomation : %s"%project_name)
+				logger.info ("Please complete all project infomation : %s"%project_name)
 				return False
 
 			# if blank all field, ignore item
@@ -276,7 +284,7 @@ class sal_globalPreference( QMainWindow ):
 
 			# check duplicate project code
 			if project_code in project_code_list:
-				print ("Do not duplicate project code : %s"%project_code)
+				logger.info ("Do not duplicate project code : %s"%project_code)
 				return False
 
 			if project_active == True:
@@ -286,10 +294,10 @@ class sal_globalPreference( QMainWindow ):
 
 
 		if active_count > 1 :
-			print ("Only one project can active, Please check !!")
+			logger.info ("Only one project can active, Please check !!")
 			return False
 		elif active_count < 1 :
-			print ("Please select active project !!")
+			logger.info ("Please select active project !!")
 			return False
 
 		# collect account setting data -----------
@@ -304,7 +312,7 @@ class sal_globalPreference( QMainWindow ):
 
 			# skip when data not modified.
 			if data != self.database:
-				print( json.dumps(data,indent=2) )
+				logger.info( json.dumps(data,indent=2) )
 				json.dump(data, open(self.databaseFilePath ,'w'), indent = 2 )
 
 				#Create project folder
@@ -322,9 +330,9 @@ class sal_globalPreference( QMainWindow ):
 					dest 	= project_path
 					if dirList == [] or 'production' not in dirList :
 						utils.utils().unzip(zipPath,dest)
-						print("Create project Folder : "+str(dest))
+						logger.info("Create project Folder : "+str(dest))
 
-				print ("Update success.")
+				logger.info ("Update success.")
 
 			self.close()
 

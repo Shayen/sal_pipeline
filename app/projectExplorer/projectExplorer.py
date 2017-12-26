@@ -18,18 +18,22 @@ except ImportError:
 
 from ...src import env
 from ...src import utils
+from ...src import log
 import custom_widget
 
 reload(custom_widget)
 reload(utils)
 reload(env)
+reload(log)
+
+logger = log.logger("projectExplorer")
+logger = logger.getLogger()
 
 import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMayaUI as apiUI
 
 getEnv 	= env.getEnv()
-
 modulepath = getEnv.modulePath()
 
 __APP_version__ = '1.4.2'
@@ -42,6 +46,7 @@ __APP_version__ = '1.4.2'
 # v1.4.1 : add action menu
 # v1.4.2 : Bug fix, Maya scene list saw another file type.
 # V1.4.3 : Bug fix, Asset list Exclude system files.
+# V1.5.0 : Insert Logging
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -97,7 +102,7 @@ class salProjectExplorer( QMainWindow ):
 		''' init '''
 		QMainWindow.__init__(self, parent)
 
-		print("##### Project Explorer : Start #####")
+		logger.info("##### Project Explorer : Start #####")
 
 		self._uiFilename_ = 'projectExplorer.ui'
 		self._uiFilePath_ = modulepath + '/ui/' + self._uiFilename_
@@ -106,6 +111,7 @@ class salProjectExplorer( QMainWindow ):
 
 		# Check is ui file exists?
 		if not os.path.isfile( self._uiFilePath_ ):
+			logger.error('File ui not found.')
 			cmds.error( 'File ui not found.' )
 
 		# ---- LoadUI -----
@@ -220,6 +226,7 @@ class salProjectExplorer( QMainWindow ):
 					return False
 				else : 
 					self.ui.comboBox_project.setCurrentIndex(prjItem)
+					logger.info("Active project : " + recentPrjt)
 
 				# set Type
 				if recentTabType == 'assets' :
@@ -280,7 +287,7 @@ class salProjectExplorer( QMainWindow ):
 						self.ui.listWidget_task.setCurrentItem(taskItem[0])
 
 			except IndexError as e :
-				print (e)
+				logger.info (e)
 				return False
 
 	def setup_projectCombobox(self):
@@ -364,7 +371,7 @@ class salProjectExplorer( QMainWindow ):
 				currentShot		= self.ui.listWidget_object_center.currentItem()
 
 				if not currentShot :
-					print ('return.')
+					logger.info ('return.')
 					return
 
 				shotName 		= self.ui.listWidget_object_center.itemWidget( currentShot ).filename(True)
@@ -515,7 +522,7 @@ class salProjectExplorer( QMainWindow ):
 				path = self.ui.label_path_editable.text()
 
 				if not os.path.exists(path):
-					print ('Path not exists.')
+					logger.error ('Path not exists.')
 					return
 
 				# list all dir, ignore 'edits' folder
@@ -545,7 +552,7 @@ class salProjectExplorer( QMainWindow ):
 				path = '%s/%s/%s/%s/%s'%(getInfo.filmPath,currentSequence,shotName,'scenes',currentTask)
 
 				if not os.path.exists(path):
-					print ('Path not exists.')
+					logger.error ('Path not exists.')
 					return
 
 				# list all dir, ignore 'edits' folder
@@ -602,7 +609,7 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.label_path_editable.setText( path )
 
 	def listWidget_task_itemSelectionChanged(self):
-		# print 'x'
+		# logger.info 'x'
 
 		currentItem = self.ui.listWidget_task.currentItem().text()
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
@@ -738,7 +745,7 @@ class salProjectExplorer( QMainWindow ):
 
 		try:
 			os.mkdir(path)
-			print('Create success.')
+			logger.info('Create success.')
 
 		except Exception as e:
 			raise(e)
@@ -757,7 +764,7 @@ class salProjectExplorer( QMainWindow ):
 
 		# // if not select any file
 		if not self.ui.listWidget_version.currentItem():
-			print ('no file selected.')
+			logger.warning ('no file selected.')
 			return
 
 		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
@@ -786,11 +793,11 @@ class salProjectExplorer( QMainWindow ):
 			# Flush scene
 			cmds.file( new = True, force = True ) 
 			# Open mayafile
-			print ('Opening file : ' + filePath)
+			logger.info ('Opening file : ' + filePath)
 			try:
 				cmds.file(filePath, o=True)
 				workspace = workspace = '/'.join( filePath.split('/')[:-3] )
-				print ('setup workspace : ' + workspace)
+				logger.info ('setup workspace : ' + workspace)
 				mel.eval( 'setProject "'+ workspace +'";')
 
 			except Exception as e:
@@ -822,7 +829,9 @@ class salProjectExplorer( QMainWindow ):
 		if os.path.exists( path ):
 			openExplorer(path)
 		else :
-			cmds.error('Path not found')
+			_msg = 'Path not found'
+			cmds.error( _msg )
+			logger.error( _msg )
 
 	def pushButton_saveIncrement_onclick(self):
 
@@ -937,14 +946,15 @@ class salProjectExplorer( QMainWindow ):
 			result =  cmds.file( save=True, type='mayaAscii' )
 			workspace = '/'.join( currentPath.split('/')[:-2] )
 
-			if workspace != '':
-				print (str(workspace))
+			logger.info("Increment save : " + '%s/%s'%( currentPath, filename ) )
 
-				print ('setup workspace : ' + workspace)
+			if workspace != '':
+				logger.info ('setup workspace : ' + workspace)
 				cmd =  'setProject "'+ workspace +'";'
 				mel.eval( cmd )
 
 		except Exception as e:
+			logger.error( 'Increment save not success : ' + '%s/%s'%( currentPath, filename ) )
 			raise (e)
 
 		# // capture view port
@@ -952,19 +962,21 @@ class salProjectExplorer( QMainWindow ):
 		thumbnail_path = workspace + '/_thumbnail'
 		if not os.path.exists(thumbnail_path):
 			os.mkdir(thumbnail_path)
+			logger.info("Create dir : " + thumbnail_path)
 
 		try:
 			utils.utils().captureViewport( outputdir = thumbnail_path, filename = thumbnail_file )
+			logger.debug("Capture viewport : " + thumbnail_path +'/' + thumbnail_file )
 
 		except Exception as e:
-			print (e)
-			print ('Capture viewport not success.')
+			logger.error ('Capture viewport not success.')
+			logger.error (e)
 
 		# // return result
 
 		if result :
 			refresh_result = self.refresh('version')
-			# print result
+			# logger.info result
 
 	def addTask_pushButton_onClick(self):
 		'''
@@ -1013,7 +1025,7 @@ class salProjectExplorer( QMainWindow ):
 
 			# 	# Description
 			# 	utils.utils().unzip(zipPath = getEnv.assetTemplate_zipPath() ,dest = path)
-			# 	print('Create new sequence success : ' + path)
+			# 	logger.info('Create new sequence success : ' + path)
 
 			# except Exception as e:
 			# 	raise(e)
@@ -1057,7 +1069,7 @@ class salProjectExplorer( QMainWindow ):
 
 			# 	# Description
 			# 	utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
-			# 	print('Create new sequence success : ' + path)
+			# 	logger.info('Create new sequence success : ' + path)
 
 			# except Exception as e:
 			# 	raise(e)
@@ -1070,18 +1082,18 @@ class salProjectExplorer( QMainWindow ):
 			- Create new task in assets mode
 		'''
 
-		# print ('Onclicked')
+		# logger.info ('Onclicked')
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
 		
 		# When working on assets
 		if tabText == 'assets':
 
-			# print ('tabText : ' + tabText)
+			# logger.info ('tabText : ' + tabText)
 
 			currentSubType = self.ui.listWidget_asset.currentItem()
 			
 			if not currentSubType  :
-				print ('Return.')
+				logger.info ('Return.')
 				return
 
 			else:
@@ -1099,7 +1111,7 @@ class salProjectExplorer( QMainWindow ):
 			# path = getInfo.assetPath + '/' + currentSubType + '/' + currentAssets + '/scenes/' + result
 			path = '%s/%s/%s'%( assetPath, currentSubType, newAssetname)
 
-			print (path + ' : ' + str(os.path.exists(path)))
+			logger.info (path + ' : ' + str(os.path.exists(path)))
 
 			# when folder exists, Loop until not duplicate
 			while os.path.exists(path):
@@ -1115,22 +1127,23 @@ class salProjectExplorer( QMainWindow ):
 				os.mkdir(path)
 
 				utils.utils().unzip(zipPath = getEnv.assetTemplate_zipPath() ,dest = path)
-				print('Create new sequence success : ' + path)
+				logger.info('Create new sequence success : ' + path)
 
 			except WindowsError as e:
+				logger.error(e)
 				raise(e)
 
 		# When working on shot		
 		else:
 
-			# print ('tabText : ' + tabText)
+			# logger.info ('tabText : ' + tabText)
 
 			sequence 	= self.ui.listWidget_sequence.currentItem()
 			# currentShot	= self.ui.listWidget_object_center.currentItem()
 			# shotName 	= self.ui.listWidget_object_center.itemWidget( currentShot )
 
 			if not sequence :
-				print ("return.")
+				logger.info ("return.")
 				return
 			else:
 				sequence = sequence.text()
@@ -1158,9 +1171,10 @@ class salProjectExplorer( QMainWindow ):
 				os.mkdir(path)
 
 				utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
-				print('Create new sequence success : ' + path)
+				logger.info('Create new sequence success : ' + path)
 
 			except WindowsError as e:
+				logger.error(e)
 				raise(e)
 
 		self.refresh('center')
@@ -1186,7 +1200,7 @@ class salProjectExplorer( QMainWindow ):
 			src = "{modulePath}/prefs".format(modulePath = modulepath)
 			shutil.copy(src = src , dst = userPrefsDir)
 
-		print("loadNewShelf (\"{filePath}\");".format(filePath = shelfPath))
+		logger.info("loadNewShelf (\"{filePath}\");".format(filePath = shelfPath))
 		mel.eval("loadNewShelf (\"{filePath}\");".format(filePath = shelfPath))
 
 		shelfFile = open(shelfPath,'r')
