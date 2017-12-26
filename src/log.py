@@ -20,7 +20,7 @@ modulePath = env.modulePath()
 
 class logger():
 
-	def __init__(self, name = __name__ ):
+	def __init__(self, name = "GLobal" ):
 
 		self.logger = logging.getLogger(__main__.__name__)
 		self._clearHandlers()
@@ -29,7 +29,7 @@ class logger():
 		logFileName = str (datetime.date.today() )
 
 		# create a file handler
-		loggerPath = '{modulePath}/log/{tool}/{logFileName}.log'.format(modulePath = modulePath,tool=name,logFileName = logFileName)
+		loggerPath = '{logDir}/{tool}/{logFileName}.log'.format(logDir = env.log_dirPath(), tool=name, logFileName = logFileName)
 		self._checkLogFolder(name)
 		handler = logging.FileHandler( loggerPath )
 		handler.setLevel(logging.INFO)
@@ -61,7 +61,7 @@ class logger():
 	def _checkLogFolder(self, tool):
 		''' Checking log folder '''
 
-		logPath = modulePath + '/log'
+		logPath = env.log_dirPath()
 		if not os.path.exists(logPath):
 			os.mkdir(logPath)
 			print ("Create directory : " + logPath)
