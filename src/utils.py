@@ -151,6 +151,19 @@ class utils(object):
 
 		return False
 
+class redshiftUtils :
+
+	def __init__(self):
+		pass
+
+	def redshiftUpdateActiveAovList(self):
+		""" Update redshift aov list in render setting window
+		"""
+		import maya.mel as mel
+		
+		mel.eval("redshiftUpdateActiveAovList();")
+
+
 if __name__ == '__main__':
 	
 	# Test inputDialog
