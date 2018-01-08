@@ -60,7 +60,7 @@ class renderSetting_window :
 		layout = cmds.columnLayout(adj=True)
 		cmds.text(l="")
 		cmds.text(l="Render path:",align="left")
-		cmds.textField("RenderPath_TextFieldGroup", tx=defaultRender_path)
+		cmds.textField("RenderPath_TextFieldGroup", tx=config['turntable']['path'])
 
 		cmds.text("\nasset Name :",align="left")
 		cmds.textField("assetName_TextFieldGroup")
