@@ -22,6 +22,7 @@ class logger():
 
 	def __init__(self, name = "GLobal" ):
 
+		self.name = name
 		self.logger = logging.getLogger(__main__.__name__)
 		self._clearHandlers()
 		self.logger.setLevel(logging.INFO)
@@ -76,4 +77,6 @@ class logger():
 
 
 	def getLogger(self):
+		self.logger.info("Start app : " + self.name)
+		
 		return self.logger
