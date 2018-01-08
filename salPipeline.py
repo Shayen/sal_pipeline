@@ -31,5 +31,9 @@ def app_assetImporter():
 	reload(assetImporter)
 	assetImporter.run()
 
+def app_redshiftMultiMatte():
+	from sal_pipeline.app.RS_MultimatteTool import rsMM_app
+	reload(rsMM_app)
+
 if __name__ == '__main__':
 	app_projectExplorer()
