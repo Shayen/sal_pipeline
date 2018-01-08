@@ -59,6 +59,9 @@ class getEnv(object):
 	def app_dirPath(self):
 		return self._modulePath_ + '/app'
 
+	def config_dirPath(self):
+		return self._modulePath_ + '/config'
+
 	def shotTemplate_zipPath(self):
 		return self.data_dirPath() + '/' + self.shotTemplateFileName
 
@@ -95,6 +98,24 @@ class getEnv(object):
 
 		except Exception as e:
 			print(e)
+
+	def get_appConfig(self, configName):
+		""" Read Json config from 'config' directory 
+		
+			Var : configName > config file name.
+		"""	
+		config_path = os.path.join(self.config_dirPath(), configName+".json")
+
+		# If file not found
+		if not os.path.exists(config_path):
+			raise IOError("File not fould : " + config_path )
+
+		# Read data
+		f = open(config_path,'r')
+		data = f.read()
+		f.close()
+		
+		return json.loads(data)
 		
 	def _read_globalConfig(self):
 		""" read config data from './configure.json' """
