@@ -1,0 +1,20 @@
+{
+    "geo_group": [
+        "GPU_checkBox",
+        "boundingBox_checkBox",
+        "obj_checkBox",
+        "sceneAssembly_checkBox"
+    ],
+    "option": {
+        "model": [
+            "GPU_checkBox",
+            "boundingBox_checkBox",
+            "obj_checkBox",
+            "sceneAssembly_checkBox"
+        ],
+        "texture": [
+            "sceneAssembly_checkBox"
+        ],
+        "rig": []
+    }
+}

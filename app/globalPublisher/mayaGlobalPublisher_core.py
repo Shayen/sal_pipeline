@@ -58,8 +58,29 @@ class mayaGlobalPublisher_core(object):
 		''' save to Hero file '''
 		# - Get hero path
 		destination_path = self._getHeroFile_path()
-		# copy file  to destination
-		shutil.copy2(src = cmds.file(q=True,sn=True), dst = destination_path)
+
+		# Create HERO file
+		mayapy_path = os.environ["MAYA_LOCATION"] + "/bin/mayapy.exe"
+		command_file= myEnv.src_dirPath() + '/createHeroFile.py'
+		fileName 	= cmds.file(q=True,sn=True)
+		output_file = destination_path
+		
+		command = "{program} {command_file} {workspace} {fileName} {output_path}".format(	
+																				program 	= mayapy_path,
+																				command_file= command_file,
+																				workspace 	= self._get_workSpace(),
+																				fileName	= fileName,
+																				output_path	= output_file)
+
+		maya = subprocess.Popen(command ,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		out,err = maya.communicate()
+		exitcode = maya.returncode
+		if str(exitcode) != '0':
+			print(err)
+			print 'error opening file: %s' % (output_file)
+		else:
+			# print 'added new layer %s to %s' % (out, output_file)
+			print out
 
 		return destination_path
 

@@ -45,11 +45,12 @@ modulepath = getEnv.modulePath()
 logger = log.logger("globalPublisher")
 logger = logger.getLogger()
 
-__app_version__ = '0.2'
+__app_version__ = '1.1'
 # V0.1
 # V0.2.0 : support Export GPU, Bounding box, Scene assembly
 # V0.3.0 : Add texture step
 # V1.0.0 : Add logger
+# V1.1.0 : Add config file, Fix hero file create.
 
 try:
 	myInfo = env.getInfo()
@@ -60,6 +61,9 @@ except IndexError :
 	logger.error(e_msg)
 
 	raise IOError(e_msg)
+
+# Read from config file : config/renderSetting.json
+config = getEnv.get_appConfig("globalPublish")
 
 class mayaGlobalPublisher( QMainWindow ):
 
@@ -83,10 +87,7 @@ class mayaGlobalPublisher( QMainWindow ):
 		file.close()
 		# -----------------
 
-		self.all_Geo_Option = [	"GPU_checkBox", 
-								"boundingBox_checkBox",
-								"obj_checkBox",
-								"sceneAssembly_checkBox" ]
+		self.all_Geo_Option = config['geo_group']
 
 		self.ui.setWindowTitle('Maya global publisher v.' + str(__app_version__))
 
@@ -149,12 +150,9 @@ class mayaGlobalPublisher( QMainWindow ):
 		'''
 		step = self.ui.comboBox_pipelineStep.currentText()
 
-		_model_option = [ 	"GPU_checkBox",
-							"boundingBox_checkBox",
-							"obj_checkBox",
-							"sceneAssembly_checkBox"]
-
-		_texture_option	= []
+		_model_option 	= config['option']['model']
+		_texture_option	= config["option"]['texture']
+		_rig_option		= config["option"]['rig']
 
 		if not step :
 			# get current step
@@ -165,24 +163,27 @@ class mayaGlobalPublisher( QMainWindow ):
 		# setup option
 
 		if step == 'model':
-
+			self._hideAllOption()
 			# show option for model
-			for option_ui in _model_option :
-			 	eval( "self.ui.{option_ui}.show()".format( option_ui = option_ui ) )
-			 	eval( "self.ui.{option_ui}.setCheckState(Qt.Checked)".format( option_ui = option_ui ) )
+			self._showOption(_model_option)
 
 		elif step == 'rig' :
 			self._hideAllOption()
 
 		elif step == 'texture':
 			self._hideAllOption()
+			# show option for texture
+			self._showOption(_texture_option)
 
 		else :
 			self._hideAllOption()
 			return False
 
-	def _showOption(self):
-		pass
+	def _showOption(self, option_list):
+		''' show option from given list '''
+		for option_ui in option_list :
+		 	eval( "self.ui.{option_ui}.show()".format( option_ui = option_ui ) )
+		 	eval( "self.ui.{option_ui}.setCheckState(Qt.Checked)".format( option_ui = option_ui ) )
 
 	def _hideAllOption(self):
 		'''hide all option'''

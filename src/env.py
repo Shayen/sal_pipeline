@@ -288,6 +288,11 @@ class getInfo(object):
 
 		return path
 
+	def get_texturePath(self):
+		'''return texture path from given workspace'''
+		workspace_path 	= self.get_workspace()
+		return( workspace_path + '/texture' )
+
 	def isType(self):
 		'''
 			return type of scene : assets / shot
