@@ -35,5 +35,13 @@ def app_redshiftMultiMatte():
 	from sal_pipeline.app.RS_MultimatteTool import rsMM_app
 	reload(rsMM_app)
 
+def app_FileTextureManager():
+	import maya.mel as mel
+
+	app_path = env.app_dirPath() + '/FileTextureManager.mel'
+	print app_path
+	mel.eval("source \"{0}\";".format(app_path))
+	mel.eval("FileTextureManager;")
+
 if __name__ == '__main__':
 	app_projectExplorer()
