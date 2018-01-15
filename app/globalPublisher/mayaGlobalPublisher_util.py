@@ -1,3 +1,4 @@
+import subprocess
 import maya.cmds as cmds
 
 def isGpuCacheNode(gpuCacheNode):
@@ -71,3 +72,10 @@ def exportGpuCache(objName , dest, filename):
 					fileName 	= filename)
 
 	return str(result)
+
+def subprocess_call(command):
+	maya 		= subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	out,err 	= maya.communicate()
+	exitcode 	= maya.returncode
+
+	return out, err, exitcode

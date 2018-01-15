@@ -98,6 +98,8 @@ class mayaGlobalPublisher( QMainWindow ):
 		self.ui.show()
 
 	def _initUI(self):
+		self.ui.progressBar.hide()
+
 		self.ui.lineEdit_publisher.setText( myInfo.getUsername() )
 		self.ui.label_pubFileName.setText(  myInfo.get_pubName() )
 		self.ui.label_filePath.setText( cmds.file(q=True, sn=True) )
@@ -192,13 +194,28 @@ class mayaGlobalPublisher( QMainWindow ):
 			eval( "self.ui.{option_ui}.hide()".format(option_ui = option_ui ) )
 			eval( "self.ui.{option_ui}.setCheckState(Qt.Unchecked)".format( option_ui = option_ui ) )
 
+	def _getCheckedOption(self):
+
+		cache_option = []
+		for step in config['geo_group'] :
+			if self.isOptionCheck( step ):
+				cache_option.append(step)
+
+		return cache_option
+
 	def _doPublish(self):
 		''' publish file '''
 
 		logger.info ("===== Publish Start =====")
 
+		# Setup progressbar============================
+		_count_step = len(self._getCheckedOption())
+		self.ui.progressBar.show()
+		self.ui.progressBar.setRange( 0, 0)
+
+		# START PUBLISH ================================
 		self.ui.listWidget_allStatus.clear()
-		is_postToFacebook = False 
+
 		# Check save state::
 		is_modifiedFile = cmds.file(q=True, modified=True)
 
@@ -212,35 +229,40 @@ class mayaGlobalPublisher( QMainWindow ):
 		# save to Hero file
 		core.creat_HeroFile()
 		self.update_Status("Create hero file.")
+		self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# export Publish data via JSON
-		core.export_pubData()
+		core.export_pubData(task 	= myInfo.get_task(), 
+							filename= myInfo.get_fileName(), 
+							user 	= myInfo.getUsername(), 
+							date 	= self.ui.label_dateTime.text(), 
+							comment = self.ui.lineEdit_comment.text(),
+							cache 	= self._getCheckedOption())
 		self.update_Status("Create publish metadata.")
 
-		if is_postToFacebook :
-			# post to FB group
-			# -- !!warning!! : user must be admin to group.
-			data = {}
-			post_result = core.post_toFacebook(data = data)
-
 		# **** EXPORT PIPELINE CACHE ***
+		self.ui.progressBar.setRange( 0, _count_step )
 
 		# Export GPU
 		if self.isOptionCheck("GPU_checkBox"):
 			core.export_GPUCache()
 			self.update_Status("Export GPU complete.")
+			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# Export BBox
 		if self.isOptionCheck("boundingBox_checkBox"):
 			core.export_objBBox()
 			self.update_Status("Export Bounding box complete.")
+			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# Export Scene Assembly
 		if self.isOptionCheck("sceneAssembly_checkBox"):
 			core.export_sceneAssembly()
 			self.update_Status("Create Scene assembly complete.")
+			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		self.update_Status("===== Publish complete =====")
+		self.ui.progressBar.hide()
 
 	def isOptionCheck(self, QcheckBox_uiName):
 		'''return check stage'''
@@ -258,6 +280,8 @@ class mayaGlobalPublisher( QMainWindow ):
 	def update_Status(self, message):
 		item = QListWidgetItem(message)
 		self.ui.listWidget_allStatus.addItem(item)
+		QCoreApplication.processEvents()
+
 		logger.info (message)
 
 	def closeWindow(self):

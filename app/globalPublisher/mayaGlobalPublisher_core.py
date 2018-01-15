@@ -1,6 +1,6 @@
 import maya.cmds as cmds
 
-import sys, os, shutil, subprocess
+import sys, os, shutil, logging, json, time
 
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
@@ -8,6 +8,9 @@ import mayaGlobalPublisher_util as pubUtil
 reload(pubUtil)
 reload(utils)
 reload(env)
+
+logger = logging.getLogger( __name__.split('.')[-1] )
+logger.addHandler(logging.NullHandler())
 
 try:
 	myInfo = env.getInfo()
@@ -72,15 +75,13 @@ class mayaGlobalPublisher_core(object):
 																				fileName	= fileName,
 																				output_path	= output_file)
 
-		maya = subprocess.Popen(command ,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		out,err = maya.communicate()
-		exitcode = maya.returncode
+		out, err, exitcode = pubUtil.subprocess_call(command)
 		if str(exitcode) != '0':
-			print(err)
+			logger.error(err)
 			print 'error opening file: %s' % (output_file)
 		else:
 			# print 'added new layer %s to %s' % (out, output_file)
-			print out
+			logger.info(out)
 
 		return destination_path
 
@@ -107,9 +108,51 @@ class mayaGlobalPublisher_core(object):
 		
 		return self._pubThumbnail_Path
 
-	def export_pubData(self):
-		''' save export metadata via JSON to pub directory '''
-		pass
+	def export_pubData(self, task, filename, user, date, comment, cache):
+		''' 
+		save export metadata via JSON to pub directory as "pubdata.json"
+
+		Pattern :
+			{
+			    "model": {
+			        "filename": "",
+			        "publisher": "",
+			        "date": "",
+			        "comment": "",
+			        "cache": []
+			    },
+			    "texture": {
+			        "filename": "",
+			        "publisher": "",
+			        "date": "",
+			        "comment": "",
+			        "cache": []
+			    }
+			}
+		'''
+		
+		# Check file exists
+		pubdata_file = self._get_workSpace() + '/scenes/pub/pubdata.json'
+		f = open(pubdata_file, 'w+')
+		data = {}
+		if os.path.exists( pubdata_file ):
+			# Load Json data
+			try:
+				data = json.load(f)
+			except ValueError :
+				data = {}
+			
+		# Modify data [Create / Update]
+		data['task'] = {}
+		data['task']['filename']	= filename
+		data['task']['publisher']	= user
+		data['task']['date']		= date
+		data['task']['comment']		= comment
+		data['task']['cache']		= cache
+
+		json.dump(data, f, indent = 2)
+
+		f.close()
 
 	def export_GPUCache(self):
 		'''Export gpu cache'''
@@ -144,15 +187,13 @@ class mayaGlobalPublisher_core(object):
 			# subprocess.call(command)
 			# print ("Create BBox : " + output_file )
 
-			maya = subprocess.Popen(command ,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-			out,err = maya.communicate()
-			exitcode = maya.returncode
+			out, err, exitcode = pubUtil.subprocess_call(command)
 			if str(exitcode) != '0':
-				print(err)
+				logger.error(err)
 				print 'error opening file: %s' % (output_file)
 			else:
 				# print 'added new layer %s to %s' % (out, output_file)
-				print out
+				logger.info(out)
 				return True
 			# return True
 
@@ -172,15 +213,13 @@ class mayaGlobalPublisher_core(object):
 																				output_path	= output_file)
 		# subprocess.call(command)
 
-		maya = subprocess.Popen(command ,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		out,err = maya.communicate()
-		exitcode = maya.returncode
+		out, err, exitcode = pubUtil.subprocess_call(command)
 		if str(exitcode) != '0':
-			print(err)
+			logger.error(err)
 			print 'error opening file: %s' % (output_file)
 		else:
 			# print 'added new layer %s to %s' % (out, output_file)
-			print out
+			logger.info (out)
 			return True
 
 if __name__ == '__main__':
