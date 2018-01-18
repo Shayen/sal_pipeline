@@ -181,7 +181,7 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.comboBox_project.currentIndexChanged.connect(self.project_select)
 		self.ui.listWidget_asset.itemSelectionChanged.connect(self.listWidget_asset_itemSelectionChanged)
 		self.ui.listWidget_sequence.itemSelectionChanged.connect(self.listWidget_sequence_itemSelectionChanged)
-		self.ui.listWidget_task.itemClicked.connect(self.listWidget_task_itemSelectionChanged)
+		self.ui.listWidget_task.itemSelectionChanged.connect(self.listWidget_task_itemSelectionChanged)
 		self.ui.tabWidget.currentChanged.connect(self.tabWidget_currentChanged)
 		self.ui.listWidget_object_center.itemSelectionChanged.connect(self.listWidget_object_center_itemClicked)
 		self.ui.listWidget_version.itemClicked.connect(self.listWidget_version_itemClicked)
@@ -194,76 +194,43 @@ class salProjectExplorer( QMainWindow ):
 		''' 
 			Setup UI from recent opened 
 
-			from structure : 'smallFun|assets|character|rat'
+			from structure : 'smallFun|assets|set|ballGround|model'
 		'''
-
-		def _findItem_CenterListWidget(ui, text):
-			''' Find data in center ListWidget '''
-
-			for index,item in [ (i,ui.item(i)) for i in range(ui.count())] :
-
-				fileName = ui.itemWidget( item ).filename(True)
-				if fileName == text :
-					return index
-
-			return None
-
-		# ------------------------------------------------------
 
 		is_optionVarExists = cmds.optionVar( exists='sal_prjExpl' )
 
 		if is_optionVarExists :
+			recent_UI   	= cmds.optionVar( q ="sal_prjExpl").split('|')
+			recentTabType 	= recent_UI[1] # Type : Shot/ Asset
+			recentSubType	= recent_UI[2] # subtype in asset / sequence in shot
+			recentItemName	= recent_UI[3] # shotname / asset name
+			recentTask 		= recent_UI[4] # Task name
+
+			logger.info("Set recent workspace as : " + cmds.optionVar( q ="sal_prjExpl") )
 
 			try :
-				recent_UI = cmds.optionVar( q ="sal_prjExpl").split('|')
-				recentPrjt = recent_UI[0]
-				recentTabType = recent_UI[1]
-				recentTask = recent_UI[4]
-
-				# set project combobox
-				prjItem = self.ui.comboBox_project.findText(recentPrjt, Qt.MatchExactly)
-				if not prjItem :
-					return False
-				else : 
-					self.ui.comboBox_project.setCurrentIndex(prjItem)
-					logger.info("Active project : " + recentPrjt)
-
-				# set Type
-				if recentTabType == 'assets' :
-					self.ui.tabWidget.setCurrentIndex(0)
-				else :
-					self.ui.tabWidget.setCurrentIndex(1)
 
 				# Type is 'shots'
 				if recentTabType == 'shots':
-					recentSeq  = recent_UI[2]
-					recentSht  = recent_UI[3]
+					# Set recent tab
+					self.ui.tabWidget.setCurrentIndex(1)
+
+					recentSeq  = recentSubType
+					recentSht  = recentItemName
 
 					# set sequence
 					seqItem = self.ui.listWidget_sequence.findItems(recentSeq, Qt.MatchExactly)
 					if seqItem == [] :
 						return False
 					else : 
-						self.ui.listWidget_sequence.setCurrentItem(prjItem[0])
+						self.ui.listWidget_sequence.setCurrentItem(seqItem[0])
 
-					# set Shot
-					shotItem = _findItem_CenterListWidget( ui = self.ui.listWidget_object_center, text = recentSht)
-					if not shotItem :
-						return False
-					else : 
-						self.ui.listWidget_object_center.setCurrentRow(shotItem)
+				elif recentTabType == 'assets' :
+					# Set recent tab
+					self.ui.tabWidget.setCurrentIndex(0)
 
-					# set Task
-					taskItem = self.ui.listWidget_task.findItems(recentTask, Qt.MatchExactly)
-					if taskItem == [] :
-						return False
-					else : 
-						self.ui.listWidget_task.setCurrentItem(taskItem[0])
-
-
-				else :
-					recentAsst = recent_UI[3]
-					recentType = recent_UI[2]
+					recentAsst = recentItemName
+					recentType = recentSubType
 
 					# set Type
 					recentTypeItem = self.ui.listWidget_asset.findItems(recentType, Qt.MatchExactly)
@@ -272,23 +239,8 @@ class salProjectExplorer( QMainWindow ):
 					else : 
 						self.ui.listWidget_asset.setCurrentItem(recentTypeItem[0])
 
-					# set Asset
-					assetItem = _findItem_CenterListWidget( ui = self.ui.listWidget_object_center, text = recentAsst)
-					if not assetItem :
-						return False
-					else :
-						self.ui.listWidget_object_center.setCurrentRow(assetItem)
-
-					# set Task
-					taskItem = self.ui.listWidget_task.findItems(recentTask, Qt.MatchExactly)
-					if taskItem == [] :
-						return False
-					else : 
-						self.ui.listWidget_task.setCurrentItem(taskItem[0])
-
-			except IndexError as e :
-				logger.info (e)
-				return False
+			except Exception as e :
+				logger.warning(e)
 
 	def setup_projectCombobox(self):
 		""" add list of project from config file to combobox """
@@ -307,8 +259,6 @@ class salProjectExplorer( QMainWindow ):
 		getInfo = env.getInfo(projectName = project)
 
 		# Check project is ready to use
-
-
 		activePrj = self.ui.comboBox_project.findText( project )
 		self.ui.comboBox_project.setCurrentIndex(activePrj)
 
@@ -388,8 +338,20 @@ class salProjectExplorer( QMainWindow ):
 					self.ui.listWidget_task.addItem(i)
 
 				result = path
-
-			self.ui.listWidget_task.setCurrentRow(0)
+				
+			# Set task as recent task
+			is_optionVarExists = cmds.optionVar( exists='sal_prjExpl' )
+			if is_optionVarExists :
+				recentTask = cmds.optionVar( q ="sal_prjExpl").split('|')[4]
+				taskItem = self.ui.listWidget_task.findItems(recentTask, Qt.MatchExactly)
+				if taskItem == [] :
+					logger.warning("recent taskItem not match : " + recentTask)
+					return False
+				else : 
+					self.ui.listWidget_task.setCurrentItem(taskItem[0])
+					logger.info("set recent task : " + recentTask)
+			else :
+				self.ui.listWidget_task.setCurrentRow(0)
 
 		# // Update asset_list
 		elif section == 'asset_list':
@@ -522,7 +484,7 @@ class salProjectExplorer( QMainWindow ):
 				path = self.ui.label_path_editable.text()
 
 				if not os.path.exists(path):
-					logger.error ('Path not exists.')
+					logger.warning ('Path not exists : ' + path)
 					return
 
 				# list all dir, ignore 'edits' folder
@@ -581,7 +543,7 @@ class salProjectExplorer( QMainWindow ):
 
 		self.refresh('asset_list')
 		self.refresh('sequence_list')
-		self.refresh('version')
+		# self.refresh('version')
 
 		print ("project_select : " + currenttext)
 
@@ -592,7 +554,7 @@ class salProjectExplorer( QMainWindow ):
 		path = getInfo.projectPath + '/production/assets/' + currentItem
 		self.ui.label_path_editable.setText(path)
 		
-		self.refresh('task_list')
+		# self.refresh('task_list')
 
 		# Update current path
 		# self.ui.label_path_editable.setText( path )
@@ -601,7 +563,7 @@ class salProjectExplorer( QMainWindow ):
 		currentItem = self.ui.listWidget_sequence.currentItem().text()
 		
 		self.refresh('center')
-		self.refresh('task_list')
+		# self.refresh('task_list')
 
 		path = "%s/%s"%(getInfo.filmPath, currentItem)
 
@@ -718,12 +680,13 @@ class salProjectExplorer( QMainWindow ):
 
 	def tabWidget_currentChanged(self):
 		
+		logger.debug("tabWidget_currentChanged")
 		self.ui.listWidget_object_center.clear()
 		self.refresh('asset_list')
 		self.refresh('sequence_list')
 		self.refresh('center')
-		self.refresh('version')
-		self.refresh('task_list')
+		# self.refresh('version')
+		# self.refresh('task_list')
 
 	def addSequence_pushButton_onClick(self):
 		''' description '''
