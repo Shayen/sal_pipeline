@@ -475,6 +475,247 @@ class getInfo(object):
 		return thumbnail_path
 
 
+class nuke_info(object):
+
+	def __init__(self,projectName=None,path=None):
+		import nuke
+		self.nuke = nuke
+
+		self.env = getEnv()
+		self.globalConfigureData = self.env.globalConfig_data
+
+		# // When input path
+		if path:
+			self.path     = path
+			self.filename = path.split('/')[-1]
+			# self.user = self._getUsername_fromPath()
+		else:
+			self.path 	  = self._getCurrentscriptPath()
+			self.filename = self.scriptName()
+			# self.user = self.getUsername()
+
+		# // when project name was set
+		if projectName:
+			self.projectName = projectName
+		else :
+			# split from file path
+			self.projectName = self._get_projectNameFromPath()
+
+		self.user = self.env.user
+		self.task = 'comp'
+		
+		self.projectPath = self.globalConfigureData['setting']['projects'][self.projectName]['project_path']
+		self.projectCode = self.globalConfigureData['setting']['projects'][self.projectName]['project_code']
+
+		self.postProductionPath = self.projectPath + '/post_production'
+		self.renderPath 	 	= self.postProductionPath + '/output/render'
+		self.nukeScriptsPath	= self.postProductionPath + '/composite/nukeScripts' 
+		self.footagePath 		= self.postProductionPath + '/footage' 
+
+		# // Will set in function 'set_projectConfigFilePath'
+		self.projectConfigFilePath = ''
+
+		self.splitPath_data = self.splitPath()
+
+	def _getCurrentscriptPath(self):
+		'''get current NukeScript path'''
+		return self.nuke.root().knob('name').value()
+
+	def scriptName(self):
+		'''
+		get current script name
+
+		out : "ppl_ep_q0030_s0010_comp_v002_ob.nk"
+		'''
+
+		return self.path.split('/')[-1]
+
+	def _get_projectNameFromPath(self):
+		""" get full name of project"""
+
+		filename 	= self.filename
+		project_code= filename.split('_')[0]
+
+		# get full project name from project code
+		for projectName in self.globalConfigureData['setting']['projects'].keys():
+			if self.globalConfigureData['setting']['projects'][projectName]['project_code'] == project_code:
+				break 
+
+		self.nuke.tprint ("Get project name from path : %s"%projectName)
+		return projectName
+
+	def getUsername(self):
+		'''
+			setup username
+			> Query computername to compare with config file
+		'''
+
+		# // Get computername
+		computerName = socket.gethostname()
+
+		# // compare with configuration file
+		if computerName in self.globalConfigureData['username'].keys():
+			username = self.globalConfigureData['username'][computerName]
+
+		# // if not math any name.
+		else :
+			username = 'Guest'
+		
+		return username
+
+	def _getUsername_fromPath(self):
+		""" """
+		path = self.filename
+		username = path.split('_')[-1].split('.')[0]
+		return username
+
+	def splitPath (self):
+		data = self.path.replace( self.projectPath+'/', '' ).split('/')
+
+		return data
+
+	def set_projectConfigFilePath(self, projectPath):
+		''' 
+			set Project config file path ...
+
+			@projectPath : path of current project
+			return : path of project config file
+		'''
+		
+		filename = 'config.con'
+		filepath = projectPath + '/' + filename
+		
+		if not os.path.exists( projectPath ):
+			self.nuke.tprint ('Project config file not found.')
+			return
+
+		self.projectConfigFilePath = filepath
+		return filepath
+
+	def get_ProjectPath(self):
+		return self.projectPath
+
+	def get_ProjectName(self):
+		return self.projectName
+
+	def get_projectCode(self):
+		return self.projectCode
+
+	def get_path(self):
+		''' 
+			Return full path of file
+		'''
+		return self.path
+
+	def get_fileName(self, ext=True):
+		'''
+			return : ppl_sq10_sh100_comp_v003_nook.nk
+		'''
+
+		if ext :
+			return self.filename
+
+		else:
+			base = os.path.basename( self.filename )
+			filename = os.path.splitext( base )[0]
+			return filename
+
+	def get_task(self):
+		return self.task
+
+	def get_version(self):
+		version = self.filename.split('_')[-2]
+		version = int ( version.replace('v','') )
+		return version
+
+	def get_lastFileVersion(self):
+		''' description '''
+
+		path = '%s/%s_%s'%(	self.nukeScriptsPath, 
+							self.get_sequence()	, 
+							self.get_shot()		
+							)
+
+		allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+		return allfile[-1]
+
+	def get_nextVersion(self, filename=False):
+
+		lastfilename = self.get_lastFileVersion()
+		version = lastfilename.split('_')[-2]
+		version = int ( version.replace('v','') )
+		result 	=  version + 1
+
+		if filename :
+			version = 'v%03d'%(result)
+			result  = '_'.join( [ self.projectCode, self.get_name(), self.get_task(), version, self.get_user()+'.nk' ] )
+
+		return result
+
+	def get_user(self):
+		user = self.user
+		return user
+		
+	def get_name(self):
+		'''
+			return name of asset / shot
+		'''
+
+		sub_path = self.splitPath_data
+		name = sub_path[3]
+
+		return name
+
+	def get_sequence(self):
+		'''
+			return : sq10
+		'''
+		return self.splitPath_data[2]
+
+	def get_shot(self):
+		'''
+			return : sh100
+		'''
+		return self.splitPath_data[3]
+
+	# def getThumbnail(self, workspace, filename, perfile=False):
+	# 	""" description """
+
+	# 	# thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
+	# 	# return thumbnail_path
+
+	# 	thumbnail_path = '%s/%s'%(workspace, '_thumbnail')
+	# 	missThumbnail_path  = self.env.data_dirPath() + '/thumbnail_miss.jpg'
+
+	# 	# // check _thumbnail path exists
+	# 	if not os.path.exists(thumbnail_path):
+	# 		# print (thumbnail_path + ' : not exists')
+	# 		return missThumbnail_path
+
+	# 	# // check number of image file
+	# 	all_thumbnail_files = os.listdir( '%s/%s'%( workspace, '_thumbnail') )
+	# 	if all_thumbnail_files == []:
+	# 		# print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
+	# 		return missThumbnail_path
+
+	# 	else:
+	# 		if perfile:
+	# 			if os.path.exists(thumbnail_path+'/'+filename):
+	# 				thumbnail_path = thumbnail_path+'/'+filename
+	# 			else:
+	# 				return missThumbnail_path
+	# 		else:
+	# 			thumbnail_file = sorted( all_thumbnail_files )[-1] 
+	# 			thumbnail_path += '/%s'%(thumbnail_file)
+
+	# 	# print ('>> : ' + thumbnail_path)
+	# 	if not os.path.exists( thumbnail_path ) :
+	# 		print (thumbnail_path + ' : not exists')
+	# 		thumbnail_path = missThumbnail_path
+
+	# 	return thumbnail_path
+
+
 def showEnvVar():
 	'''
 		Print all var
