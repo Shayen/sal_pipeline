@@ -570,7 +570,7 @@ class nuke_info(object):
 		return username
 
 	def splitPath (self):
-		data = self.path.replace( self.projectPath+'/', '' ).split('/')
+		data = self.path.split( '/')[-1].split('_')
 
 		return data
 
@@ -655,28 +655,18 @@ class nuke_info(object):
 	def get_user(self):
 		user = self.user
 		return user
-		
-	def get_name(self):
-		'''
-			return name of asset / shot
-		'''
-
-		sub_path = self.splitPath_data
-		name = sub_path[3]
-
-		return name
 
 	def get_sequence(self):
 		'''
 			return : sq10
 		'''
-		return self.splitPath_data[2]
+		return self.splitPath_data[1]
 
 	def get_shot(self):
 		'''
 			return : sh100
 		'''
-		return self.splitPath_data[3]
+		return self.splitPath_data[2]
 
 	# def getThumbnail(self, workspace, filename, perfile=False):
 	# 	""" description """
