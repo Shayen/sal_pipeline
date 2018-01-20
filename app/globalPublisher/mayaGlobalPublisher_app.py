@@ -109,6 +109,7 @@ class mayaGlobalPublisher( QMainWindow ):
 		self.ui.comboBox_pipelineStep.addItem("model")
 		self.ui.comboBox_pipelineStep.addItem("rig")
 		self.ui.comboBox_pipelineStep.addItem("texture")
+		self.ui.comboBox_pipelineStep.addItem("set")
 
 		# Get current task
 		self._setCurrentTask()
@@ -155,6 +156,7 @@ class mayaGlobalPublisher( QMainWindow ):
 		_model_option 	= config['option']['model']
 		_texture_option	= config["option"]['texture']
 		_rig_option		= config["option"]['rig']
+		_set_option		= config["option"]['set']
 
 		if not step :
 			# get current step
@@ -176,6 +178,10 @@ class mayaGlobalPublisher( QMainWindow ):
 			self._hideAllOption()
 			# show option for texture
 			self._showOption(_texture_option)
+		elif step == 'set':
+			self._hideAllOption()
+			# show option for texture
+			self._showOption(_set_option)			
 
 		else :
 			self._hideAllOption()

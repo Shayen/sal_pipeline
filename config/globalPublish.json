@@ -15,6 +15,9 @@
         "texture": [
             "sceneAssembly_checkBox"
         ],
-        "rig": []
+        "rig": [],
+        "set": [
+            "sceneAssembly_checkBox"
+        ]
     }
 }
