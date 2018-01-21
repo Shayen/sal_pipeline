@@ -1,3 +1,6 @@
 [submodule "app/RS_MultimatteTool"]
 	path = app/RS_MultimatteTool
 	url = https://github.com/Shayen/RS_MultimatteTool.git
+[submodule "src/Qt.py"]
+	path = src/Qt.py
+	url = https://github.com/mottosso/Qt.py
