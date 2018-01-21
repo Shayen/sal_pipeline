@@ -69,6 +69,7 @@ class nuke_projectExplorer( QMainWindow ):
 		self.ui.pushButton_openExplorer.clicked.connect(self._openExplorer)
 
 		self.ui.listWidget_scriptShot.itemClicked.connect(self._setScriptVersionList)
+		self.ui.comboBox_sequence.activated.connect(self._setScriptShotList)
 
 	def _setProjectComboBox(self):
 		''' Setup projectComboBox '''
@@ -105,6 +106,7 @@ class nuke_projectExplorer( QMainWindow ):
 
 	def _setScriptShotList(self):
 
+		self.ui.listWidget_scriptVersion.clear()
 		self.ui.listWidget_scriptShot.clear()
 		current_seq = self.ui.comboBox_sequence.currentText()
 

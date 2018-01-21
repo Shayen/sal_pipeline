@@ -197,7 +197,7 @@ class getInfo(object):
 		# // Will set in function 'set_projectConfigFilePath'
 		self.projectConfigFilePath = ''
 
-		# self.type = self.isType()
+		# self.isType() = self.isType()
 		self.asset 	= 'assets'
 		self.shot 	= 'shot'
 
@@ -305,7 +305,7 @@ class getInfo(object):
 		# else : 
 		# 	myType = 'assets'
 
-		self.type = myType
+		# self.type() = myType
 		return myType
 
 	def _getAssetType(self):
@@ -346,7 +346,7 @@ class getInfo(object):
 
 	def get_lastFileVersion(self):
 		''' description '''
-		if self.type == self.shot:
+		if self.isType() == self.shot:
 			path = '%s/%s/%s/%s/%s/%s/%s'%(	self.projectPath 	, 
 											'production'		, 
 											'film'				, 
@@ -359,7 +359,7 @@ class getInfo(object):
 			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
 			return allfile[-1]
 
-		elif self.type == self.asset:
+		elif self.isType() == self.asset:
 			path = '%s/%s/%s/%s/%s/%s/%s'%(	self.projectPath 	, 
 											'production'		, 
 											'assets'			, 
@@ -374,7 +374,7 @@ class getInfo(object):
 			return allfile[-1]
 
 		else:
-			cmds.error('Type not match : ' + self.type)
+			cmds.error('Type not match : ' + self.isType())
 
 	def get_nextVersion(self, filename=False):
 
@@ -386,7 +386,7 @@ class getInfo(object):
 		if filename :
 			version = 'v%03d'%(result)
 
-			if self.type == self.shot:
+			if self.isType() == self.shot:
 				result = '_'.join( [ self.projectCode, self.get_sequence(), self.get_shot(), self.get_task(), version, self.get_user()+'.ma' ] )
 			else :
 				result = '_'.join( [ self.projectCode, self._getAssetType(), self.get_name(), self.get_task(), version, self.get_user()+'.ma' ] )
@@ -404,14 +404,14 @@ class getInfo(object):
 
 		sub_path = self.splitPath_data
 
-		if self.type == self.asset :
+		if self.isType() == self.asset :
 			name = sub_path[3]
 
-		elif self.type == self.shot :
+		elif self.isType() == self.shot :
 			name = sub_path[3]
 
 		else:
-			cmds.error('type not found : ' + self.type)
+			cmds.error('type not found : ' + self.isType())
 
 		return name
 
@@ -419,22 +419,22 @@ class getInfo(object):
 		'''
 			return : sq10
 		'''
-		if self.type == self.shot:
+		if self.isType() == self.shot:
 			return self.splitPath_data[2]
 
 		else:
-			cmds.warning('type is not shot : ' + self.type)
+			cmds.warning('type is not shot : ' + self.isType())
 			return False
 
 	def get_shot(self):
 		'''
 			return : sh100
 		'''
-		if self.type == self.shot:
+		if self.isType() == self.shot:
 			return self.splitPath_data[3]
 
 		else:
-			cmds.warning('type is not shot : ' + self.type)
+			cmds.warning('type is not shot : ' + self.isType())
 			return False
 
 	def getThumbnail(self, workspace, filename, perfile=False):

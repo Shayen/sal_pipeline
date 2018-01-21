@@ -941,6 +941,24 @@ class salProjectExplorer( QMainWindow ):
 			refresh_result = self.refresh('version')
 			# logger.info result
 
+		# Setup Option var
+		currentPrjt = currentproject = self.ui.comboBox_project.currentText()
+		currentType = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+		currentcenterItem	= self.ui.listWidget_object_center.currentItem()
+		currentTask = self.ui.listWidget_task.currentItem().text()
+		
+		if currentType == 'shots':
+			currentSeq 		= self.ui.listWidget_sequence.currentItem().text()
+			shotName 		= self.ui.listWidget_object_center.itemWidget( currentcenterItem ).filename(True)
+			current_Step 	= "{0}|{1}|{2}|{3}|{4}".format( currentPrjt, currentType, currentSeq, shotName, currentTask )
+
+		else :
+			currentAssets 	= self.ui.listWidget_asset.currentItem().text()
+			currentSubType 	= self.ui.listWidget_object_center.itemWidget( currentcenterItem ).filename(True)
+			current_Step 	= "{0}|{1}|{2}|{3}|{4}".format( currentPrjt, currentType, currentAssets, currentSubType, currentTask )
+
+		cmds.optionVar( sv = ["sal_prjExpl", current_Step])
+
 	def addTask_pushButton_onClick(self):
 		'''
 			add task in scene' folder

@@ -88,10 +88,7 @@ class mayaGlobalPublisher_core(object):
 	def _get_workSpace(self):
 		'''return workspace'''
 		filePath = cmds.file(q=True, sn=True)
-		if myInfo.isType() == 'shot':
-			workspace = '/'.join( filePath.split('/')[:-2] )
-		else :
-			workspace = '/'.join( filePath.split('/')[:-3] )
+		workspace = '/'.join( filePath.split('/')[:-3] )
 
 		return workspace
 
@@ -133,6 +130,11 @@ class mayaGlobalPublisher_core(object):
 		
 		# Check file exists
 		pubdata_file = self._get_workSpace() + '/scenes/pub/pubdata.json'
+
+		if not os.path.exists(os.path.dirname(pubdata_file)):
+			os.mkdir(os.path.dirname(pubdata_file))
+			logger.info ("Create folder : " + os.path.dirname(pubdata_file) )
+
 		f = open(pubdata_file, 'w+')
 		data = {}
 		if os.path.exists( pubdata_file ):

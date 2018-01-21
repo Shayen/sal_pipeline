@@ -5,7 +5,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMayaUI as apiUI
-import shiboken
+#import shiboken
 
 from functools import partial
 import os, sys, subprocess, time, datetime, shutil
