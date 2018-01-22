@@ -43,5 +43,10 @@ def app_FileTextureManager():
 	mel.eval("source \"{0}\";".format(app_path))
 	mel.eval("FileTextureManager;")
 
+def app_mergePlace2TextureNode():
+	from sal_pipeline.app import merge_place2DTexture
+	reload(merge_place2DTexture)
+	merge_place2DTexture.main()
+
 if __name__ == '__main__':
 	app_projectExplorer()
