@@ -641,6 +641,8 @@ class nuke_info(object):
 
 	def get_nextVersion(self, filename=False):
 
+		self.splitPath()
+
 		lastfilename = self.get_lastFileVersion()
 		version = lastfilename.split('_')[-2]
 		version = int ( version.replace('v','') )

@@ -15,6 +15,7 @@ except ImportError:
 	from PySide import __version__
 
 from sal_pipeline.src import env
+from sal_pipeline.src import utils
 import core
 reload(env)
 info = env.nuke_info()
@@ -67,6 +68,7 @@ class nuke_projectExplorer( QMainWindow ):
 		self.ui.pushButton_open.clicked.connect(self._openScript)
 		self.ui.pushButton_save.clicked.connect(self._saveScript)
 		self.ui.pushButton_openExplorer.clicked.connect(self._openExplorer)
+		self.ui.pushButton_addShot.clicked.connect(self._addShot)
 
 		self.ui.listWidget_scriptShot.itemClicked.connect(self._setScriptVersionList)
 		self.ui.comboBox_sequence.activated.connect(self._setScriptShotList)
@@ -104,6 +106,9 @@ class nuke_projectExplorer( QMainWindow ):
 		# Add seq to seq_combobox
 		self.ui.comboBox_sequence.addItems(seqList)
 
+		# Setup current path 
+		self.ui.label_currentPath.setText(getInfo.nukeScriptsPath)
+
 	def _setScriptShotList(self):
 
 		self.ui.listWidget_scriptVersion.clear()
@@ -140,6 +145,26 @@ class nuke_projectExplorer( QMainWindow ):
 
 		if os.path.exists(currentPath):
 			openExplorer(currentPath)
+
+	def _addShot(self):
+		''' Add shot folder '''
+		current_seq  = self.ui.comboBox_sequence.currentText()
+
+		is_folderExists =  True
+		while is_folderExists :
+			shotname, ok = QInputDialog.getText(self, "Shot name :", "message")
+			if ok :
+				folderName = "{seq}_{shot}".format(seq = current_seq, shot = shotname)
+				is_folderExists =  folderName in os.listdir( getInfo.nukeScriptsPath )
+			else :
+				return
+
+		folderPath = getInfo.nukeScriptsPath + '/' + folderName
+		os.mkdir( folderPath )
+
+		self._setScriptShotList()
+		
+		# os.mkdir()
 
 	def _openScript(self):
 		# get path
