@@ -222,7 +222,7 @@ global proc shelf_SAL_pipeline () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline import salPipeline\nreload(salPipeline)\n\nsalPipeline.app_FileTextureManager()" 
+        -annotation "Texture Manager" 
         -enableBackground 0
         -align "center" 
         -label "FileTextureManager" 
@@ -232,11 +232,10 @@ global proc shelf_SAL_pipeline () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
-        -imageOverlayLabel "TxMan" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "pythonFamily.png" 
-        -image1 "pythonFamily.png" 
+        -image "P:/_studioTool/sal_pipeline/prefs/icons/textureManager.png" 
+        -image1 "P:/_studioTool/sal_pipeline/prefs/icons/textureManager.png" 
         -style "iconOnly" 
         -marginWidth 1
         -marginHeight 1
@@ -263,15 +262,44 @@ global proc shelf_SAL_pipeline () {
         -flipY 0
         -useAlpha 1
         -font "plainLabelFont" 
-        -imageOverlayLabel "DupOnSur" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "pythonFamily.png" 
-        -image1 "pythonFamily.png" 
+        -image "P:/_studioTool/sal_pipeline/prefs/icons/paintOnSurface.png" 
+        -image1 "P:/_studioTool/sal_pipeline/prefs/icons/paintOnSurface.png" 
         -style "iconOnly" 
         -marginWidth 1
         -marginHeight 1
         -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline.app import app_duplicateOverSurface\nreload(app_duplicateOverSurface)\n\napp = app_duplicateOverSurface.duplicateOverSurface_app()\napp.show_ui()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "merge 2d placement node to single node" 
+        -enableBackground 0
+        -align "center" 
+        -label "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pi..." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "P:/_studioTool/sal_pipeline/prefs/icons/mergePlace2TextureNode.png" 
+        -image1 "P:/_studioTool/sal_pipeline/prefs/icons/mergePlace2TextureNode.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline import salPipeline\nreload(salPipeline)\n\nsalPipeline.app_mergePlace2TextureNode()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
