@@ -19,6 +19,7 @@ def create_sceneAssembly( workspace, assetName, pub_filepath, output_path ):
 	# pub_filepath = pub_filepath.replace(workspace, '')
 	gpu_filepath = "scenes/pub/%s_gpu.abc"%(assetName)
 	box_filepath = "scenes/pub/%s_bbox.ma"%(assetName)
+	RSp_filepath = "scenes/pub/%s_rsProxy.ma"%(assetName)
 	
 	try :
 		cmds.file(f=True, new=True)
@@ -60,6 +61,23 @@ def create_sceneAssembly( workspace, assetName, pub_filepath, output_path ):
 
 			print ("\t- Add GPU" )
 
+		# Create RS Proxy representation
+		if isFileExists( os.path.join(workspace,RSp_filepath) ):
+			
+			cmds.assembly(		assembly_name , 
+								edit	= True   , 
+								createRepresentation='Scene',
+								repName	= "RsProxy"  , 
+								repLabel= "RSProxy")
+
+			editRepresentation(	assemblyNode = assembly_name, 
+								type 	= "Cache", 
+								path 	= workspace + '/' + RSp_filepath, 
+								newName = "RsProxy" , 
+								oldName = "RsProxy")
+
+			print ("\t- Add Rs Proxy : " + os.path.join(workspace,RSp_filepath) )
+
 		# Create BBox representation
 		if isFileExists( os.path.join(workspace,box_filepath) ):
 		
@@ -71,7 +89,7 @@ def create_sceneAssembly( workspace, assetName, pub_filepath, output_path ):
 
 		editRepresentation(	assemblyNode = assembly_name, 
 							type 	= "Scene", 
-							path 	= os.path.join(workspace,box_filepath), 
+							path 	= workspace + '/' + box_filepath, 
 							newName = "BBox" , 
 							oldName = "BBox")
 
@@ -141,7 +159,7 @@ def editRepresentation(assemblyNode, type, path, newName, oldName):
 		return True 
 
 	else : 
-		mm.eval('warning "No name [%s] in representation list";' % oldName)
+		mel.eval('warning "No name [%s] in representation list";' % oldName)
 		return False 
 
 def _addRepresentation(assemblyNode, type, path) : 
