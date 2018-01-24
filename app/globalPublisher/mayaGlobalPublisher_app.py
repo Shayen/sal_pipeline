@@ -51,6 +51,7 @@ __app_version__ = '1.1'
 # V0.3.0 : Add texture step
 # V1.0.0 : Add logger
 # V1.1.0 : Add config file, Fix hero file create.
+# V1.2.0 : Add save increment Optionbox, Add RS proxy optionbox
 
 try:
 	myInfo = env.getInfo()
@@ -229,8 +230,9 @@ class mayaGlobalPublisher( QMainWindow ):
 		if is_modifiedFile :
 
 			#  save Increment
-			core.saveIncrement()
-			self.update_Status("save increment.")
+			if self.isOptionCheck("checkBox_incrementSave"):
+				core.saveIncrement()
+				self.update_Status("save increment.")
 
 		# save to Hero file
 		core.creat_HeroFile()
@@ -260,6 +262,12 @@ class mayaGlobalPublisher( QMainWindow ):
 			core.export_objBBox()
 			self.update_Status("Export Bounding box complete.")
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
+
+		# Export Redshift proxy
+		if self.isOptionCheck("RSProxy_checkBox"):
+			core.export_RSProxy()
+			self.update_Status("Create Redshift proxy complete.")
+			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)			
 
 		# Export Scene Assembly
 		if self.isOptionCheck("sceneAssembly_checkBox"):

@@ -23,6 +23,8 @@ except IndexError :
 	print('_'*64)
 	print(e_msg)
 
+MAYAPY_PATH = os.environ["MAYA_LOCATION"] + "/bin/mayapy.exe"
+
 class mayaGlobalPublisher_core(object):
 
 	def __init__(self):
@@ -63,13 +65,12 @@ class mayaGlobalPublisher_core(object):
 		destination_path = self._getHeroFile_path()
 
 		# Create HERO file
-		mayapy_path = os.environ["MAYA_LOCATION"] + "/bin/mayapy.exe"
 		command_file= myEnv.src_dirPath() + '/createHeroFile.py'
 		fileName 	= cmds.file(q=True,sn=True)
 		output_file = destination_path
 		
 		command = "{program} {command_file} {workspace} {fileName} {output_path}".format(	
-																				program 	= mayapy_path,
+																				program 	= MAYAPY_PATH,
 																				command_file= command_file,
 																				workspace 	= self._get_workSpace(),
 																				fileName	= fileName,
@@ -172,7 +173,6 @@ class mayaGlobalPublisher_core(object):
 		# Export bounding box
 		if myInfo.get_task() == 'model' :
 
-			mayapy_path = os.environ["MAYA_LOCATION"] + "/bin/mayapy.exe"
 			command_file= myEnv.src_dirPath() + '/createBoundingBox.py'
 			assetName 	= myInfo.get_name()
 			dest 		= self._get_workSpace() + '/scenes/pub/'
@@ -180,7 +180,7 @@ class mayaGlobalPublisher_core(object):
 			output_file = dest +assetName + '_bbox.ma'
 			
 			command = "{program} {command_file} {workspace} {fileName} {assetName} {output_path}".format(	
-																					program 	= mayapy_path,
+																					program 	= MAYAPY_PATH,
 																					command_file= command_file,
 																					workspace 	= self._get_workSpace(),
 																					fileName	= fileName,
@@ -202,12 +202,11 @@ class mayaGlobalPublisher_core(object):
 	def export_sceneAssembly(self):
 		'''Create scene Assembly'''
 		# Create scene Assembly
-		mayapy_path = os.environ["MAYA_LOCATION"] + "/bin/mayapy.exe"
 		command_file= myEnv.src_dirPath() + '/createMayaSceneAssembly.py'
 		workspace 	= self._get_workSpace()
 		pub_filepath= self._getHeroFile_path()
 		output_file = self._get_workSpace() + '/scenes/pub/%s_AD.ma'%(myInfo.get_name())
-		command = "{program} {command_file} {workspace} {assetName} {pub_filepath} {output_path}".format(	program 	= mayapy_path,
+		command = "{program} {command_file} {workspace} {assetName} {pub_filepath} {output_path}".format(	program 	= MAYAPY_PATH,
 																				command_file= command_file,
 																				workspace	= workspace,
 																				assetName	= myInfo.get_name(),
@@ -215,6 +214,41 @@ class mayaGlobalPublisher_core(object):
 																				output_path	= output_file)
 		# subprocess.call(command)
 
+		out, err, exitcode = pubUtil.subprocess_call(command)
+		if str(exitcode) != '0':
+			logger.error(err)
+			print 'error opening file: %s' % (output_file)
+		else:
+			# print 'added new layer %s to %s' % (out, output_file)
+			logger.info (out)
+			return True
+
+	def export_RSProxy(self):
+		''' 
+		Create redshift proxy data 
+
+		rsProxy 
+			-fp "C:/Users/siras/Desktop/sphere_test.rs" 
+			-sl;
+		'''
+
+		dest 		= self._get_workSpace() + '/scenes/pub'
+		rsfilename 	= myInfo.get_name() + "_rs.rs"
+		result 		= pubUtil.exportRSProxy("Geo_grp", dest, rsfilename)
+
+		print ("Export Rs proxy : " + result)
+
+		# (workspace,fileName,assetName,output_path)
+		command_file= myEnv.src_dirPath() + '/createRedshiftProxy.py'
+		workspace 	= self._get_workSpace()
+		pub_filepath= self._getHeroFile_path()
+		output_file = self._get_workSpace() + '/scenes/pub/%s_rsProxy.ma'%(myInfo.get_name())
+		command     = "{program} {command_file} {workspace} {fileName} {assetName} {output_path}".format(program = MAYAPY_PATH,
+																									command_file= command_file,
+																									workspace	= workspace,
+																									fileName 	= pub_filepath,
+																									assetName	= myInfo.get_name(),
+																									output_path	= output_file)
 		out, err, exitcode = pubUtil.subprocess_call(command)
 		if str(exitcode) != '0':
 			logger.error(err)
