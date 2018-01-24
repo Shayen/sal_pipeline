@@ -356,7 +356,7 @@ class getInfo(object):
 											self.get_task() 
 											)
 
-			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) and file.endswith('.ma') ]
 			return allfile[-1]
 
 		elif self.isType() == self.asset:
@@ -370,7 +370,7 @@ class getInfo(object):
 											)
 			print path
 
-			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) and file.endswith('.ma') ]
 			return allfile[-1]
 
 		else:
@@ -379,6 +379,7 @@ class getInfo(object):
 	def get_nextVersion(self, filename=False):
 
 		lastfilename = self.get_lastFileVersion()
+		print lastfilename
 		version = lastfilename.split('_')[-2]
 		version = int ( version.replace('v','') )
 		result 	=  version + 1
