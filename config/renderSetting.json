@@ -2,6 +2,9 @@
     "turntable": {
         "path": "P:/smf_project/post_production/output/render/Turntable"
     },
+    "shot": {
+        "path": "P:/smf_project/post_production/output/render/"
+    },
     "aov": {
         "aov_list": [
             "Ambient Occlusion",
@@ -45,15 +48,15 @@
         ],
         "preset": {
             "0_basic": [
-            	"Diffuse Filter",
-            	"Diffuse Lighting",
-            	"Ambient Occlusion",
-            	"Reflections",
-            	"Refractions",
-            	"Bump Normals",
-            	"Normals",
-            	"Specular Lighting",
-            	"Shadows"
+                "Diffuse Filter",
+                "Diffuse Lighting",
+                "Ambient Occlusion",
+                "Reflections",
+                "Refractions",
+                "Bump Normals",
+                "Normals",
+                "Specular Lighting",
+                "Shadows"
             ],
             "1_setA": [],
             "2_setB": [],

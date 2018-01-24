@@ -12,12 +12,14 @@ reload(log)
 logger = log.logger("renderSetting")
 logger = logger.getLogger()
 getEnv 	 = env.getEnv()
+getInfo	 = env.getInfo()
 rs_utils = utils.redshiftUtils()
 
-_APP_VERSION_ = 'v 2.1'
+_APP_VERSION_ = 'v 2.2'
 # v 1.0 : Build for turntable render
 # v 2.0 : Add RS_AOV set up
 # v 2.1 : Add log
+# v 2.2 : Add Shot option
 
 _windowsName = "salRenderSetting_window"
 
@@ -59,8 +61,13 @@ class renderSetting_window :
 		"""  Turntable tab  """
 		layout = cmds.columnLayout(adj=True)
 		cmds.text(l="")
+
+		cmds.optionMenu("optionMenu_option", label='Option', changeCommand=self.optionmenu_onChange )
+		cmds.menuItem( label='Turntable' )
+		cmds.menuItem( label='Shot' )
+
 		cmds.text(l="Render path:",align="left")
-		cmds.textField("RenderPath_TextFieldGroup", tx=config['turntable']['path'])
+		cmds.textField("RenderPath_TextFieldGroup", tx = config['turntable']['path'])
 
 		cmds.text("\nasset Name :",align="left")
 		cmds.textField("assetName_TextFieldGroup")
@@ -70,6 +77,15 @@ class renderSetting_window :
 		cmds.setParent('..')
 
 		return layout
+
+	def optionmenu_onChange(delf, *args):
+		current_option = cmds.optionMenu("optionMenu_option",q=True, value = True)
+		if current_option == 'Shot' and getInfo.isType() == 'shot' :
+			cmds.textField("RenderPath_TextFieldGroup", e=True, tx = config['shot']['path'] + getInfo.get_sequence())
+			cmds.textField("assetName_TextFieldGroup", e=True, tx = getInfo.get_shot())
+
+		elif current_option == "Turntable":
+			cmds.textField("RenderPath_TextFieldGroup", e=True, tx = config['turntable']['path'])
 
 	def tab_AovSetting(self):
 		""" Aov setting tab """
@@ -106,16 +122,31 @@ class renderSetting_window :
 
 		renderPath  = cmds.textField("RenderPath_TextFieldGroup", q=True, tx=True)
 		assetName   = cmds.textField( "assetName_TextFieldGroup", q=True, tx=True)
+		option 		= cmds.optionMenu("optionMenu_option", q=True, v=True)
 
-		currentDate = datetime.datetime.now().strftime('%Y-%m-%d')
-		currentTime = datetime.datetime.now().strftime('%H-%M-%S')
+		currentDate = datetime.datetime.now().strftime('%Y%m%d')
+		currentTime = datetime.datetime.now().strftime('%H%M%S')
 
 		if renderPath != "" and assetName != "":
-			path_to_render = os.path.join( defaultRender_path, assetName,currentDate, currentTime)
+			path_to_render = os.path.join( renderPath, assetName,currentDate+'_'+currentTime)
 			cmds.workspace( rt = ["images", path_to_render])
 			cmds.setAttr("defaultRenderGlobals.imageFilePrefix","<Scene>", type = "string")
-			cmds.setAttr("redshiftOptions.imageFormat",4)
 
+			if option == "Turntable":
+				cmds.setAttr("redshiftOptions.imageFormat",4)
+
+			elif option == "Shot":
+				cmds.setAttr("defaultRenderGlobals.enableDefaultLight",0)# enableDefaultLight 0
+				cmds.setAttr("defaultResolution.width",1920)			# setAttr "defaultResolution.width" 1920;
+				cmds.setAttr("defaultResolution.height",1080) 			# setAttr "defaultResolution.height" 1080;
+				cmds.setAttr("defaultResolution.deviceAspectRatio",1.778) 
+				cmds.setAttr("defaultResolution.pixelAspect",1)
+				cmds.setAttr("redshiftOptions.imageFormat",1)
+				cmds.setAttr("redshiftOptions.exrForceMultilayer",1)	# exrForceMultilayer 1
+				cmds.setAttr("redshiftOptions.exrMultipart",1) 			# exrMultipart 1
+				cmds.setAttr("redshiftOptions.copyToTextureCache",0) 	# copyToTextureCache 0 
+				cmds.setAttr("redshiftOptions.primaryGIEngine",4)
+				cmds.setAttr("redshiftOptions.secondaryGIEngine",4)
 		else :
 			cmds.error("Field must not empty")
 			return False
