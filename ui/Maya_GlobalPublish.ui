@@ -112,6 +112,16 @@
             </widget>
            </item>
            <item>
+            <widget class="QCheckBox" name="checkBox_incrementSave">
+             <property name="text">
+              <string>save increment</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QCheckBox" name="GPU_checkBox">
              <property name="enabled">
               <bool>true</bool>
@@ -135,6 +145,13 @@
             <widget class="QCheckBox" name="sceneAssembly_checkBox">
              <property name="text">
               <string>Scene assembly</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="RSProxy_checkBox">
+             <property name="text">
+              <string>Redshift proxy</string>
              </property>
             </widget>
            </item>
