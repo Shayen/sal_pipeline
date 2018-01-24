@@ -488,7 +488,7 @@ class salProjectExplorer( QMainWindow ):
 					return
 
 				# list all dir, ignore 'edits' folder
-				dirList = [i for i in os.listdir(path) if i != 'edits' and not i.startswith(".")]
+				dirList = [i for i in os.listdir(path) if i != 'edits' and not i.startswith(".") and i.endswith('.ma')]
 
 				for i in dirList:
 					item = QListWidgetItem(i)
