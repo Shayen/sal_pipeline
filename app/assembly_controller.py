@@ -50,7 +50,64 @@ def showAllRender(*args):
 	all_ref = get_assemblyReference()
 	for node in all_ref :
 		setActiveRep(node, "Render")
+
+def switch_to_ref():
+
+	class loc:
+		x = 0
+		y = 0
+		z = 0
+		rx=0
+		ry=0
+		rz=0
+		sx = 0
+		sy = 0
+		sz = 0
 	
+	#sels = cmds.ls(type = "assemblyReference")
+	sels = cmds.ls(sl=True)
+
+	switch_grp = "switch_grp"
+	if not cmds.objExists(switch_grp):
+		cmds.group(n = switch_grp, em= True)
+
+	for asm in sels :
+		try :
+			path = cmds.getAttr('%s.definition' %asm)
+		except :
+			continue
+
+		pos 	= loc()
+		pos.x 	= cmds.getAttr('%s.tx' %asm)
+		pos.y	= cmds.getAttr('%s.ty' %asm)
+		pos.z	= cmds.getAttr('%s.tz' %asm)
+		pos.rx	= cmds.getAttr('%s.rx' %asm)
+		pos.ry	= cmds.getAttr('%s.ry' %asm)
+		pos.rz	= cmds.getAttr('%s.rz' %asm)
+		pos.sx	= cmds.getAttr('%s.sx' %asm)
+		pos.sy	= cmds.getAttr('%s.sy' %asm)
+		pos.sz	= cmds.getAttr('%s.sz' %asm)
+
+		
+		cmds.hide(asm)
+		
+		for myfile in os.listdir(os.path.dirname(path)):
+			
+			if myfile.endswith("texture_pub.ma"):
+				filepath = os.path.dirname(path) + '/' + myfile
+				namespace = asm.split(":")[-1]
+				group_name = "{ns}_refGrp".format(ns=asm)
+				cmds.file(filepath, r=True, namespace = namespace,gr=True, gn= group_name)
+				
+				# geo_grp = "{namespace}:Geo_grp".format(namespace = namespace)
+				
+				cmds.parent(group_name, switch_grp)
+				cmds.select(group_name)
+				cmds.move(pos.x,pos.y,pos.z,group_name, relative=True)
+				cmds.rotate(pos.rx,pos.ry,pos.rz)
+				cmds.scale(pos.sx,pos.sy,pos.sz)
+				cmds.select(cl=True)
+
 def run():
 
 	cleanUI()
