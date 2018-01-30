@@ -82,7 +82,7 @@ class mayaGlobalPublisher_core(object):
 			print 'error opening file: %s' % (output_file)
 		else:
 			# print 'added new layer %s to %s' % (out, output_file)
-			logger.info(out)
+			logger.info("Create Hero file : " + output_file)
 
 		return destination_path
 
@@ -166,7 +166,7 @@ class mayaGlobalPublisher_core(object):
 			filename 	= myInfo.get_name() + "_gpu"
 			result 		= pubUtil.exportGpuCache("Geo_grp", dest, filename)
 
-			print ("Export cache : " + result)
+			logger.info ("Export cache : " + result)
 
 	def export_objBBox(self):
 		'''Export object boundingbox'''
@@ -195,7 +195,7 @@ class mayaGlobalPublisher_core(object):
 				print 'error opening file: %s' % (output_file)
 			else:
 				# print 'added new layer %s to %s' % (out, output_file)
-				logger.info(out)
+				logger.info("Create BoundingBox : " + output_file)
 				return True
 			# return True
 
@@ -220,7 +220,7 @@ class mayaGlobalPublisher_core(object):
 			print 'error opening file: %s' % (output_file)
 		else:
 			# print 'added new layer %s to %s' % (out, output_file)
-			logger.info (out)
+			logger.info ("Create scene assembly : " + pub_filepath)
 			return True
 
 	def export_RSProxy(self):
@@ -236,7 +236,7 @@ class mayaGlobalPublisher_core(object):
 		rsfilename 	= myInfo.get_name() + "_rs.rs"
 		result 		= pubUtil.exportRSProxy("Geo_grp", dest, rsfilename)
 
-		print ("Export Rs proxy : " + result)
+		logger.info ("Export Rs proxy : " + result)
 
 		# (workspace,fileName,assetName,output_path)
 		command_file= myEnv.src_dirPath() + '/createRedshiftProxy.py'

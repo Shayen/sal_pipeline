@@ -62,6 +62,9 @@ class getEnv(object):
 	def config_dirPath(self):
 		return self._modulePath_ + '/config'
 
+	def pref_dirPath(self):
+		return self._modulePath_ + '/prefs'
+
 	def shotTemplate_zipPath(self):
 		return self.data_dirPath() + '/' + self.shotTemplateFileName
 

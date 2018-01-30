@@ -52,6 +52,11 @@ def uninitialize_maya():
 def import_refObject():
 	refs = cmds.ls(type='reference')
 	for i in refs:
+
+		if i == "sharedReferenceNode":
+			logger.warning ("skip : " + i)
+			continue
+
 		rFile = cmds.referenceQuery(i, f=True)
 		cmds.file(rFile, importReference=True)
 

@@ -94,6 +94,17 @@ global proc shelf_SAL_pipeline () {
         -commandRepeatable 1
         -flat 1
     ;
+    separator
+        -enable 1
+        -width 20
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -style "shelf" 
+        -horizontal 0
+    ;
     shelfButton
         -enableCommandRepeat 1
         -enable 1
@@ -123,6 +134,17 @@ global proc shelf_SAL_pipeline () {
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
+    ;
+    separator
+        -enable 1
+        -width 20
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -style "shelf" 
+        -horizontal 0
     ;
     shelfButton
         -enableCommandRepeat 1
@@ -192,10 +214,10 @@ global proc shelf_SAL_pipeline () {
         -manage 1
         -visible 1
         -preventOverride 0
-        -annotation "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline.app import salRender_setting as renderSetting\nreload(renderSetting)\n\nrenderSetting.showUI()" 
+        -annotation "mass replace reference" 
         -enableBackground 0
         -align "center" 
-        -label "Render setting" 
+        -label "mass replace reference" 
         -labelOffset 0
         -rotation 0
         -flipX 0
@@ -204,12 +226,12 @@ global proc shelf_SAL_pipeline () {
         -font "plainLabelFont" 
         -overlayLabelColor 0.8 0.8 0.8 
         -overlayLabelBackColor 0 0 0 0.5 
-        -image "P:/_studioTool/sal_pipeline/prefs/icons/renderSetting.png" 
-        -image1 "P:/_studioTool/sal_pipeline/prefs/icons/renderSetting.png" 
+        -image "P:/_studioTool/sal_pipeline/prefs/icons/replaceReference.png" 
+        -image1 "P:/_studioTool/sal_pipeline/prefs/icons/replaceReference.png" 
         -style "iconOnly" 
         -marginWidth 1
         -marginHeight 1
-        -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline.app import salRender_setting as renderSetting\nreload(renderSetting)\n\nrenderSetting.showUI()" 
+        -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline import salPipeline\nreload(salPipeline)\n\nsalPipeline.app_replaceReference()" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
@@ -255,7 +277,7 @@ global proc shelf_SAL_pipeline () {
         -annotation "Duplicate on Surface" 
         -enableBackground 0
         -align "center" 
-        -label "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pi..." 
+        -label "Duplicate on Surface" 
         -labelOffset 0
         -rotation 0
         -flipX 0
@@ -274,6 +296,77 @@ global proc shelf_SAL_pipeline () {
         -commandRepeatable 1
         -flat 1
     ;
+    separator
+        -enable 1
+        -width 20
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -enableBackground 0
+        -style "shelf" 
+        -horizontal 0
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline.app import salRender_setting as renderSetting\nreload(renderSetting)\n\nrenderSetting.showUI()" 
+        -enableBackground 0
+        -align "center" 
+        -label "Render setting" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "P:/_studioTool/sal_pipeline/prefs/icons/renderSetting.png" 
+        -image1 "P:/_studioTool/sal_pipeline/prefs/icons/renderSetting.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline.app import salRender_setting as renderSetting\nreload(renderSetting)\n\nrenderSetting.showUI()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -enable 1
+        -width 35
+        -height 35
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Render Layer Manager" 
+        -enableBackground 0
+        -align "center" 
+        -label "Render Layer Manager" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "P:/_studioTool/sal_pipeline/prefs/icons/renderLayerManager.png" 
+        -image1 "P:/_studioTool/sal_pipeline/prefs/icons/renderLayerManager.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pipeline directory here\nsal_modulepath = \"D:\\WORK\\Programming\\sal_pipeline\"\n\nif os.environ.has_key(\"SAL_MODULE_PATH\"):\n    SAL_MODULE_PATH = os.path.dirname(os.environ[\"SAL_MODULE_PATH\"])\nelse :\n    SAL_MODULE_PATH = os.path.dirname( sal_modulepath )\n    \nif not os.path.exists( SAL_MODULE_PATH ):\n    raise IOError( \"Path \\\"%s\\\" : not found.\"%SAL_MODULE_PATH );\n    \nprint \"\\n---- next step ---------------------------------------------\"\nif SAL_MODULE_PATH not in sys.path :\n    sys.path.append(SAL_MODULE_PATH)\n    print \"add \\\"%s\\\" to sys.path\\n\"%SAL_MODULE_PATH\nelse:\n    print(\"\\\"%s\\\" was exists. Skip add path.\\n\"%SAL_MODULE_PATH)\n\n#call project explorer.\nfrom sal_pipeline import salPipeline\nreload(salPipeline)\n\nsalPipeline.app_renderLayerManager()" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
     shelfButton
         -enableCommandRepeat 1
         -enable 1
@@ -285,7 +378,7 @@ global proc shelf_SAL_pipeline () {
         -annotation "merge 2d placement node to single node" 
         -enableBackground 0
         -align "center" 
-        -label "import sys, os\nimport maya.cmds as cmds\n\n# define path to sal_pi..." 
+        -label "merge 2d placement node to single node" 
         -labelOffset 0
         -rotation 0
         -flipX 0

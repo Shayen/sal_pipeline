@@ -1,4 +1,5 @@
 import maya.cmds as cmds
+import os
 
 _windowObjName   = "sceneAssembly_control"
 _windowTitleName = "Scene Assembly controller"
@@ -51,7 +52,7 @@ def showAllRender(*args):
 	for node in all_ref :
 		setActiveRep(node, "Render")
 
-def switch_to_ref():
+def switch_to_ref(*args):
 
 	class loc:
 		x = 0
@@ -119,6 +120,9 @@ def run():
 	cmds.button("Show all BBox", 	h = 40, c = showAllBBox )
 	cmds.button("show all GPU", 	h = 40, c = showAllGpu )
 	cmds.button("show all Render", 	h = 40, c = showAllRender )
+	cmds.separator(h=5)
+	cmds.text(l = "Switch to ref :", align= "left")
+	cmds.button("Swith to ref", c= switch_to_ref)
 	cmds.setParent("..")
 	
 	cmds.showWindow( _windowObjName )

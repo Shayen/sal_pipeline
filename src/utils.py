@@ -172,7 +172,16 @@ class redshiftUtils :
 		
 		mel.eval("redshiftUpdateActiveAovList();")
 
+def cleanOldShelf(shelfname):
+	import maya.cmds as cmds
+	
+	if cmds.shelfLayout(shelfname, ex=1):
+		if cmds.shelfLayout(shelfname, q=1, ca=1):
+			for each in cmds.shelfLayout(shelfname, q=1, ca=1):
+				print(each)
+				cmds.deleteUI(each)
 
+		
 if __name__ == '__main__':
 	
 	# Test inputDialog

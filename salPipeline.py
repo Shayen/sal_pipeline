@@ -48,5 +48,17 @@ def app_mergePlace2TextureNode():
 	reload(merge_place2DTexture)
 	merge_place2DTexture.main()
 
+def app_replaceReference():
+	from sal_pipeline.app import massRefReplace_app
+	reload(massRefReplace_app)
+	app = massRefReplace_app.massRefRlps_UI()
+	app.showUI()
+
+def app_renderLayerManager():
+	from sal_pipeline.app import RenderlayerManager_app
+	reload(RenderlayerManager_app)
+	app = RenderlayerManager_app.renderLayerMan_UI()
+	app.showUI()
+
 if __name__ == '__main__':
 	app_projectExplorer()

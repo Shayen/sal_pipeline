@@ -36,7 +36,7 @@ import maya.OpenMayaUI as apiUI
 getEnv 	= env.getEnv()
 modulepath = getEnv.modulePath()
 
-__APP_version__ = '1.4.2'
+__APP_version__ = '1.5.1'
 # V1.0.0 : All function running well.
 # V1.1.0 : Support pySide2, not list "_thummbnail folder in sequence list"
 # V1.2.0 : Support multi project switching
@@ -47,6 +47,7 @@ __APP_version__ = '1.4.2'
 # v1.4.2 : Bug fix, Maya scene list saw another file type.
 # V1.4.3 : Bug fix, Asset list Exclude system files.
 # V1.5.0 : Insert Logging
+# V1.5.1 : Add ability to Add/Reload SAL_pipeline shelf
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -1173,23 +1174,19 @@ class salProjectExplorer( QMainWindow ):
 		prefWin = Global_preference.sal_globalPreference(self)
 
 	def actionAdd_SAL_shelf_triggered(self):
-		''' add SAL pipeline shelf to shelf '''
-		userPrefsDir = getEnv.maya_userPrefDir()
-		shelfPath = "%s%s/%s"%(userPrefsDir,"shelves","shelf_SAL_pipeline.mel")
+		''' add/reload SAL pipeline shelf to shelf '''
 
-		if not os.path.exists(shelfPath):
-			src = "{modulePath}/prefs".format(modulePath = modulepath)
-			shutil.copy(src = src , dst = userPrefsDir)
+		# myenv = env.getEnv()
+		shelfname = "SAL_pipeline"	
+		utils.cleanOldShelf(shelfname)
 
-		logger.info("loadNewShelf (\"{filePath}\");".format(filePath = shelfPath))
-		mel.eval("loadNewShelf (\"{filePath}\");".format(filePath = shelfPath))
+		# cmds.shelfLayout(shelfname, p="ShelfLayout")
+		shelfPath = getEnv.pref_dirPath() + "/shelves/shelf_SAL_pipeline.mel"	
+		mel.eval("source \"" + shelfPath + "\"")
+		mel.eval("shelf_SAL_pipeline()")	
 
-		shelfFile = open(shelfPath,'r')
-		shelfCommd = shelfFile.read()
-		shelfFile.close()
-
-		mel.eval(shelfCommd)
-		mel.eval("shelf_SAL_pipeline;")
+		print (shelfname)
+		cmds.setParent(shelfname)	
 
 
 #####################################################################
