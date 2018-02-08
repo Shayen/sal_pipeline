@@ -217,7 +217,7 @@ class getInfo(object):
 			if self.globalConfigureData['setting']['projects'][projectName]['project_code'] == project_code:
 				break 
 
-		print ("Get project name from path : %s"%projectName)
+		# print ("Get project name from path : %s"%projectName)
 		return projectName
 
 	def getUsername(self):
@@ -511,7 +511,7 @@ class nuke_info(object):
 		self.projectPath = self.globalConfigureData['setting']['projects'][self.projectName]['project_path']
 		self.projectCode = self.globalConfigureData['setting']['projects'][self.projectName]['project_code']
 
-		self.postProductionPath = self.projectPath + '/post_production'
+		self.postProductionPath = self.projectPath 		  + '/post_production'
 		self.renderPath 	 	= self.postProductionPath + '/output/render'
 		self.nukeScriptsPath	= self.postProductionPath + '/composite/nukeScripts' 
 		self.footagePath 		= self.postProductionPath + '/footage' 
@@ -545,7 +545,7 @@ class nuke_info(object):
 			if self.globalConfigureData['setting']['projects'][projectName]['project_code'] == project_code:
 				break 
 
-		self.nuke.tprint ("Get project name from path : %s"%projectName)
+		# self.nuke.tprint ("Get project name from path : %s"%projectName)
 		return projectName
 
 	def getUsername(self):
@@ -673,44 +673,6 @@ class nuke_info(object):
 			return : sh100
 		'''
 		return self.splitPath_data[2]
-
-	# def getThumbnail(self, workspace, filename, perfile=False):
-	# 	""" description """
-
-	# 	# thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
-	# 	# return thumbnail_path
-
-	# 	thumbnail_path = '%s/%s'%(workspace, '_thumbnail')
-	# 	missThumbnail_path  = self.env.data_dirPath() + '/thumbnail_miss.jpg'
-
-	# 	# // check _thumbnail path exists
-	# 	if not os.path.exists(thumbnail_path):
-	# 		# print (thumbnail_path + ' : not exists')
-	# 		return missThumbnail_path
-
-	# 	# // check number of image file
-	# 	all_thumbnail_files = os.listdir( '%s/%s'%( workspace, '_thumbnail') )
-	# 	if all_thumbnail_files == []:
-	# 		# print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
-	# 		return missThumbnail_path
-
-	# 	else:
-	# 		if perfile:
-	# 			if os.path.exists(thumbnail_path+'/'+filename):
-	# 				thumbnail_path = thumbnail_path+'/'+filename
-	# 			else:
-	# 				return missThumbnail_path
-	# 		else:
-	# 			thumbnail_file = sorted( all_thumbnail_files )[-1] 
-	# 			thumbnail_path += '/%s'%(thumbnail_file)
-
-	# 	# print ('>> : ' + thumbnail_path)
-	# 	if not os.path.exists( thumbnail_path ) :
-	# 		print (thumbnail_path + ' : not exists')
-	# 		thumbnail_path = missThumbnail_path
-
-	# 	return thumbnail_path
-
 
 def showEnvVar():
 	'''

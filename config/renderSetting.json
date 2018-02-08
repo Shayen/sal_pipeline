@@ -51,14 +51,28 @@
                 "Diffuse Filter",
                 "Diffuse Lighting",
                 "Ambient Occlusion",
+                "Diffuse Lighting Raw",
+                "Total Diffuse Lighting Raw",
+                "Global Illumination Raw",
+                "Global Illumination",
+                "Reflections Filter",
+                "Reflections Raw",
                 "Reflections",
+                "Refractions Filter",
+                "Refractions Raw",
                 "Refractions",
                 "Bump Normals",
                 "Normals",
                 "Specular Lighting",
+                "Motion Vectors",
                 "Shadows"
             ],
-            "1_setA": [],
+            "1_technical": [
+                "Depth",
+                "Motion Vectors",
+                "Normals",
+                "World Position"
+            ],
             "2_setB": [],
             "3_setC": []
         }

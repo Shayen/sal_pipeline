@@ -68,12 +68,17 @@ class mayaGlobalPublisher_core(object):
 		command_file= myEnv.src_dirPath() + '/createHeroFile.py'
 		fileName 	= cmds.file(q=True,sn=True)
 		output_file = destination_path
+
+		# Export selection "Geo_Grp"
+		cmds.select("Geo_grp")
+		cmds.file(output_file, type='mayaAscii', exportSelected = True, f=True )
+		cmds.select(cl=True)
 		
 		command = "{program} {command_file} {workspace} {fileName} {output_path}".format(	
 																				program 	= MAYAPY_PATH,
 																				command_file= command_file,
 																				workspace 	= self._get_workSpace(),
-																				fileName	= fileName,
+																				fileName	= output_file,
 																				output_path	= output_file)
 
 		out, err, exitcode = pubUtil.subprocess_call(command)

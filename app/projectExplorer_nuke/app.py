@@ -17,11 +17,14 @@ except ImportError:
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
 import core
+reload(core)
 reload(env)
-info = env.nuke_info()
+# info = env.nuke_info()
 
-__app_version__ = "0.1"
-# V0.1
+__app_version__ = "1.1"
+# v0.1
+# v1.0 : add variable to remember last time working sequence
+# v1.1 : Show thumbnail
 
 getEnv 	= env.getEnv()
 modulepath = getEnv.modulePath()
@@ -50,8 +53,10 @@ class nuke_projectExplorer( QMainWindow ):
 
 		self.ui.setWindowTitle('Project Explorer v.' + str(__app_version__))
 
-		self._initUI()
+		nuke.tprint("\n====== Project Explorer Start ======")
+
 		self._initConnect()
+		self._initUI()
 
 		# self.ui.show()
 
@@ -70,7 +75,8 @@ class nuke_projectExplorer( QMainWindow ):
 		self.ui.pushButton_openExplorer.clicked.connect(self._openExplorer)
 		self.ui.pushButton_addShot.clicked.connect(self._addShot)
 
-		self.ui.listWidget_scriptShot.itemClicked.connect(self._setScriptVersionList)
+		self.ui.listWidget_scriptShot.itemSelectionChanged.connect(self._setScriptVersionList)
+		self.ui.listWidget_scriptVersion.itemClicked.connect(self._versionOnclicked)
 		self.ui.comboBox_sequence.activated.connect(self._setScriptShotList)
 
 	def _setProjectComboBox(self):
@@ -80,7 +86,7 @@ class nuke_projectExplorer( QMainWindow ):
 		global getInfo
 
 		self.ui.comboBox_project.clear()
-		projectList = listAllProject()
+		projectList = core.listAllProject()
 		self.ui.comboBox_project.addItems( projectList )
 
 		# get active project
@@ -94,14 +100,25 @@ class nuke_projectExplorer( QMainWindow ):
 		activePrj = self.ui.comboBox_project.findText( project )
 		self.ui.comboBox_project.setCurrentIndex(activePrj)
 
-		result = True
+		# Setup last time used project
+		recentPrj = core.get_recentWorkingProject()
+		if recentPrj :
+			index = self.ui.comboBox_project.findText(recentPrj)
+
+			if not index is False :
+				self.ui.comboBox_project.setCurrentIndex(index)
+				nuke.tprint("recent project  : " + recentPrj)
+			else :
+				nuke.tprint("Index not found" + str(index))
+		else :
+			nuke.tprint("recent project not found : " + str(recentPrj))
 
 	def _setSequenceComboBox(self):
 		''' Setup sequence combo box from given project name '''
 		
 		self.ui.comboBox_sequence.clear()
-		seqList = listAllSequence()
-		nuke.tprint(seqList)
+		seqList = core.listAllSequence( str(getInfo.nukeScriptsPath) )
+		# nuke.tprint(seqList)
 
 		# Add seq to seq_combobox
 		self.ui.comboBox_sequence.addItems(seqList)
@@ -109,14 +126,40 @@ class nuke_projectExplorer( QMainWindow ):
 		# Setup current path 
 		self.ui.label_currentPath.setText(getInfo.nukeScriptsPath)
 
+		# Setup last time used sequence
+		recentSeq = core.get_recentWorkingSequence()
+		if recentSeq :
+			index = self.ui.comboBox_sequence.findText(recentSeq)
+
+			if not index is False :
+				self.ui.comboBox_sequence.setCurrentIndex(index)
+				nuke.tprint("recent sequence : " + recentSeq)
+			else :
+				nuke.tprint("Index not found" + str(index))
+		else :
+			nuke.tprint("recent Sequence not found : " + str(recentSeq))
+
 	def _setScriptShotList(self):
 
 		self.ui.listWidget_scriptVersion.clear()
 		self.ui.listWidget_scriptShot.clear()
 		current_seq = self.ui.comboBox_sequence.currentText()
 
-		allShot = listAllShot(current_seq)
+		allShot = core.listAllShot( getInfo.nukeScriptsPath, current_seq )
 		self.ui.listWidget_scriptShot.addItems(allShot)
+
+		# Setup last time used shot
+		recentShot = core.get_recentWorkingShot()
+		if recentShot :
+			item = self.ui.listWidget_scriptShot.findItems(recentShot, Qt.MatchExactly)[0]
+
+			if not item is False :
+				self.ui.listWidget_scriptShot.setCurrentItem(item)
+				nuke.tprint("recent shot     : " + recentShot)
+			else :
+				nuke.tprint("Item not found" + recentShot)
+		else :
+			nuke.tprint("recent Shot not found : " + str(recentShot))
 
 	def _setScriptVersionList(self):
 		''' Setup script listWidget '''
@@ -128,15 +171,35 @@ class nuke_projectExplorer( QMainWindow ):
 		currentPath = getInfo.nukeScriptsPath	+ '/' +"{seq}_{shot}".format(seq = current_seq, shot = current_shot)
 		self.ui.label_currentPath.setText(currentPath)
 
-		versionlist = listAllVersion(seq = current_seq, shot = current_shot)
+		versionlist = core.listAllVersion( nukeScriptsPath = getInfo.nukeScriptsPath , seq = current_seq, shot = current_shot)
 
 		self.ui.listWidget_scriptVersion.clear()
 
 		for fileName in versionlist :
 			item = QListWidgetItem(fileName)
-			item.setData(Qt.UserRole, objString(currentPath+'/'+fileName))
+			item.setData(Qt.UserRole, core.objString(currentPath+'/'+fileName))
 
 			self.ui.listWidget_scriptVersion.addItem(item)
+
+		# show thumbnail
+		try :
+			thumbnailPath = core.getThumbnail(shotDirPath = currentPath, perfile = False )
+			self._setThumbnail(thumbnailPath)
+		except Exception as e :
+			nuke.tprint(str(e))
+
+	def _versionOnclicked(self):
+		''' version in listwidget on clicked '''
+		currentPath = self.ui.label_currentPath.text()
+		scriptPath  = self.ui.listWidget_scriptVersion.currentItem().data( Qt.UserRole ).getString()
+		scriptname  = os.path.splitext( os.path.basename(scriptPath) )[0] + '.png'
+
+		# show thumbnail
+		try :
+			thumbnailPath = core.getThumbnail(shotDirPath = currentPath, filename = scriptname, perfile = True )
+			self._setThumbnail(thumbnailPath)
+		except Exception as e :
+			nuke.tprint(str(e))
 
 	def _openExplorer(self):
 		''' open in explorer '''
@@ -144,7 +207,9 @@ class nuke_projectExplorer( QMainWindow ):
 		currentPath = self.ui.label_currentPath.text()
 
 		if os.path.exists(currentPath):
-			openExplorer(currentPath)
+			core.openExplorer(currentPath)
+		else :
+			nuke.tprint("Path not exists : " + currentPath)
 
 	def _addShot(self):
 		''' Add shot folder '''
@@ -164,22 +229,40 @@ class nuke_projectExplorer( QMainWindow ):
 
 		self._setScriptShotList()
 		
-		# os.mkdir()
+	def _setThumbnail(self, imagePath):
+
+		missThumbnail_path  = getEnv.data_dirPath() + '/thumbnail_miss.jpg'
+
+		# if not os.path.exists(imagePath) or imagePath == missThumbnail_path :
+		# 	imagePath = missThumbnail_path
+		# 	pixmap = QPixmap( imagePath )
+		# 	pixmap = pixmap.scaledToHeight(180)
+		# 	self.ui.thumbnail_placeholder.setPixmap(pixmap)
+		# 	return
+
+		pixmap = QPixmap( imagePath )
+		pixmap = pixmap.scaledToHeight(180)
+		self.ui.thumbnail_placeholder.setPixmap(pixmap)
 
 	def _openScript(self):
 		# get path
-		scriptPath = self.ui.listWidget_scriptVersion.currentItem().data( Qt.UserRole ).getString()
-
+		scriptPath  = self.ui.listWidget_scriptVersion.currentItem().data( Qt.UserRole ).getString()
+		current_prj = self.ui.comboBox_project.currentText()
+		current_seq = self.ui.comboBox_sequence.currentText()
+		current_shot= self.ui.listWidget_scriptShot.currentItem().text()
+		
 		# if nuke.Root().modified() :
 		# 	# Confirm dialog
 		# 	pass
 
 		nuke.scriptOpen(scriptPath)
+		core.save_recentWorkingSpace(project = current_prj ,seq = current_seq, shot = current_shot )
 
 	def _saveScript(self):
 
 		projectCode  = getInfo.projectCode
 		currentpath  = self.ui.label_currentPath.text() 
+		current_prj  = self.ui.comboBox_project.currentText()
 		current_seq  = self.ui.comboBox_sequence.currentText()
 		current_shot = self.ui.listWidget_scriptShot.currentItem().text()
 
@@ -198,71 +281,23 @@ class nuke_projectExplorer( QMainWindow ):
 																			version = "%04d"%version,
 																			user = getInfo.get_user())
 
-		nuke.tprint(filename)
+		
 		savePath = currentpath + '/' + filename
-		nuke.scriptSaveAs(savePath)
 
+		# Save thumbnail
+		core.saveFrame(thumbnailPath = currentpath + '/_thumbnail/'+ filename.replace(".nk", ".png") )
+
+		# Save recent working space
+		core.save_recentWorkingSpace(project = current_prj ,seq = current_seq, shot = current_shot )
+
+		# Save Nuke script
+		nuke.scriptSaveAs(savePath)
+		nuke.tprint("save : " + filename)
+
+		# Update version list in UI
 		self._setScriptVersionList()
 
 #####################################################################
-
-def listAllProject():
-	data = getEnv.globalConfig_data
-	return data['setting']['projects'].keys()
-	# getInfo = env.getInfo(projectName = "Vision")
-
-def listAllSequence():
-	allShot = []
-
-	nuke.tprint(getInfo.nukeScriptsPath)
-
-	for dirName in [ item for item in os.listdir(getInfo.nukeScriptsPath) if os.path.isdir(getInfo.nukeScriptsPath + '/' + item) == True ]:
-		seq = dirName.split('_')[0]
-		if seq not in allShot :
-			allShot.append(seq)
-
-	# if find nothing return folder is empty
-	if not allShot :
-		allShot = '-- Empty --'
-
-	return allShot
-
-def listAllShot(currentSeq):
-	allShot = []
-
-	for dirName in [ item for item in os.listdir(getInfo.nukeScriptsPath) if os.path.isdir(getInfo.nukeScriptsPath + '/' + item) == True ]:
-		seq = dirName.split('_')[0]
-		if seq == currentSeq :
-			allShot.append(dirName.split('_')[1])
-
-	# if find nothing return folder is empty
-	if not allShot :
-		allShot = '-- Empty --'
-
-	return allShot
-
-def listAllVersion(seq,shot):
-	_shot_dirName = "{seq}_{shot}".format(seq = seq, shot = shot)
-	_shot_dirPath = os.path.join(getInfo.nukeScriptsPath, _shot_dirName) 
-
-	return [item for item in os.listdir(_shot_dirPath) if os.path.isfile(_shot_dirPath + '/' + item) ]
-
-def objString(string):
-
-	class objectString(object):
-		def __init__(self, *args):
-			self.text = args[0]
-
-		def getString(self):
-			return self.text
-
-	data = objectString( string )
-	return data
-
-def openExplorer(filePath):
-	"""Open File explorer after finish."""
-	win_publishPath = filePath.replace('/', '\\')
-	subprocess.Popen('explorer \/select,\"%s\"' % win_publishPath)
 
 def run():
 	# clearUI()

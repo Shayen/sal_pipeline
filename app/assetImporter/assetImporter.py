@@ -176,6 +176,11 @@ class mayaAssetImpoter( QMainWindow ):
 			result = cmds.assembly(name = referenceNode_name + "_AR", type='assemblyReference')
 			cmds.setAttr(result+".definition", definition_Path, type="string")
 
+			try :
+				cmds.assembly(result, e = True, active = 'Render')
+			except RuntimeError as e :
+				print ("skip : " + result)
+
 		# import as Reference
 		elif import_method == self.import_asREF :
 			
@@ -243,7 +248,7 @@ def ui_choosePubFile(files, scenePath):
 	cmds.setParent("..")
 
 	cmds.showWindow("sal_assetImporter_ChoosePubFile")
-	cmds.window("sal_assetImporter_ChoosePubFile",e=True, w= 300, h= 100)
+	cmds.window("sal_assetImporter_ChoosePubFile",e=True, w= 450, h= 100)
 
 
 def getMayaWindow():

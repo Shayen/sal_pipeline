@@ -215,6 +215,10 @@ class mayaGlobalPublisher( QMainWindow ):
 
 		logger.info ("===== Publish Start =====")
 
+		if not cmds.objExists("Geo_grp"):
+			cmds.confirmDialog("Not have \"Geo_grp\"")
+			return False
+
 		# Setup progressbar============================
 		_count_step = len(self._getCheckedOption())
 		self.ui.progressBar.show()

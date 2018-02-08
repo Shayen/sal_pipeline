@@ -57,6 +57,7 @@ class renderSetting_window :
 		# adjust window size
 		cmds.window( _windowsName, e=True, w = 400, h=100 )
 
+
 	def tab_turntable(self) :
 		"""  Turntable tab  """
 		layout = cmds.columnLayout(adj=True)
@@ -76,13 +77,18 @@ class renderSetting_window :
 		cmds.button(l="set path",c = self.setRender)
 		cmds.setParent('..')
 
+		# set to if entity is shot
+		if getInfo.isType() == 'shot' :
+			cmds.optionMenu("optionMenu_option", e=True, value = 'Shot')
+			self.optionmenu_onChange()
+
 		return layout
 
 	def optionmenu_onChange(delf, *args):
 		current_option = cmds.optionMenu("optionMenu_option",q=True, value = True)
 		if current_option == 'Shot' and getInfo.isType() == 'shot' :
 			cmds.textField("RenderPath_TextFieldGroup", e=True, tx = config['shot']['path'] + getInfo.get_sequence())
-			cmds.textField("assetName_TextFieldGroup", e=True, tx = getInfo.get_shot())
+			cmds.textField("assetName_TextFieldGroup" , e=True, tx = getInfo.get_shot())
 
 		elif current_option == "Turntable":
 			cmds.textField("RenderPath_TextFieldGroup", e=True, tx = config['turntable']['path'])
@@ -127,8 +133,11 @@ class renderSetting_window :
 		currentDate = datetime.datetime.now().strftime('%Y%m%d')
 		currentTime = datetime.datetime.now().strftime('%H%M%S')
 
+		assetRenderPath = os.path.join( renderPath, assetName)
+		version 	= _checkversion(assetRenderPath)
+
 		if renderPath != "" and assetName != "":
-			path_to_render = os.path.join( renderPath, assetName,currentDate+'_'+currentTime)
+			path_to_render = os.path.join( assetRenderPath, version)
 			cmds.workspace( rt = ["images", path_to_render])
 			cmds.setAttr("defaultRenderGlobals.imageFilePrefix","<Scene>", type = "string")
 
@@ -212,6 +221,23 @@ def showUI():
 	clearUI()
 
 	renderSetting_window()
+
+def _checkversion(assetRenderPath):
+	''' Check version folder '''
+	
+	if not os.path.exists(assetRenderPath):
+		return 'v0001'
+
+	allDir =  [d for d in os.listdir(assetRenderPath) if d.startswith('v')]
+	allDir.sort()
+
+	if allDir :
+		lastversion = int(allDir[-1].replace('v',''))
+		nextversion = lastversion + 1 
+	else :
+		nextversion = 1
+
+	return ("v{version:04d}".format(version = nextversion))
 
 def clearUI():
 

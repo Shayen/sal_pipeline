@@ -52,15 +52,22 @@ def showAllRender(*args):
 	for node in all_ref :
 		setActiveRep(node, "Render")
 
+def showAllRsProxy(*args):
+	all_ref = get_assemblyReference()
+	for node in all_ref :
+		setActiveRep(node, "RsProxy")
+
 def switch_to_ref(*args):
 
 	class loc:
-		x = 0
-		y = 0
-		z = 0
-		rx=0
-		ry=0
-		rz=0
+		x  = 0
+		y  = 0
+		z  = 0
+
+		rx = 0
+		ry = 0
+		rz = 0
+		
 		sx = 0
 		sy = 0
 		sz = 0
@@ -119,6 +126,7 @@ def run():
 	cmds.button("Show all Locator", h = 40, c = showAllLocator )
 	cmds.button("Show all BBox", 	h = 40, c = showAllBBox )
 	cmds.button("show all GPU", 	h = 40, c = showAllGpu )
+	cmds.button("show all Proxy", 	h = 40, c = showAllRsProxy )
 	cmds.button("show all Render", 	h = 40, c = showAllRender )
 	cmds.separator(h=5)
 	cmds.text(l = "Switch to ref :", align= "left")
