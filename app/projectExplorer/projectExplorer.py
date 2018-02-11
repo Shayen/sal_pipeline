@@ -48,6 +48,7 @@ __APP_version__ = '1.5.1'
 # V1.4.3 : Bug fix, Asset list Exclude system files.
 # V1.5.0 : Insert Logging
 # V1.5.1 : Add ability to Add/Reload SAL_pipeline shelf
+# V1.5.2 : Add update snapshot
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -190,6 +191,7 @@ class salProjectExplorer( QMainWindow ):
 		# Menu action
 		self.ui.actionPreference_setting.triggered.connect(self.actionPreference_setting_triggered)
 		self.ui.actionAdd_SAL_shelf.triggered.connect(self.actionAdd_SAL_shelf_triggered)
+		self.ui.actionUpdate_snapshot.triggered.connect(self.actionUpdate_snapshot_triggered)
 
 	def _init_recentUiStep(self):
 		''' 
@@ -1160,6 +1162,19 @@ class salProjectExplorer( QMainWindow ):
 				raise(e)
 
 		self.refresh('center')
+
+	def actionUpdate_snapshot_triggered(self):
+		''' update current snapshot '''
+
+		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
+		shotinfo = env.getInfo(path = filePath)
+
+		thumbnail_path = shotinfo.get_workspace() + '/_thumbnail'
+		thumbnail_file = shotinfo.get_fileName(ext=False)+'.jpg'
+
+		print ("Update snapshot : " + os.path.join(thumbnail_path,thumbnail_file))
+
+		utils.utils().captureViewport( outputdir = thumbnail_path, filename = thumbnail_file )
 
 	def actionPreference_setting_triggered(self):
 		""" open project setting window """

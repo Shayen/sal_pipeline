@@ -346,6 +346,18 @@
             </widget>
            </item>
            <item>
+            <widget class="QGroupBox" name="groupBox_2">
+             <property name="title">
+              <string>Comment :</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <widget class="QLineEdit" name="lineEdit_comment"/>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <layout class="QHBoxLayout" name="horizontalLayout_openSaveButton">
              <item>
               <widget class="QPushButton" name="pushButton_open">
@@ -391,7 +403,7 @@
      <x>0</x>
      <y>0</y>
      <width>1174</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -402,6 +414,7 @@
     <addaction name="actionSave"/>
     <addaction name="separator"/>
     <addaction name="actionRecent_open"/>
+    <addaction name="actionUpdate_snapshot"/>
    </widget>
    <widget class="QMenu" name="menuPreference">
     <property name="title">
@@ -441,6 +454,11 @@
   <action name="actionAdd_SAL_shelf">
    <property name="text">
     <string>Add/Reload SAL shelf</string>
+   </property>
+  </action>
+  <action name="actionUpdate_snapshot">
+   <property name="text">
+    <string>Update snapshot</string>
    </property>
   </action>
  </widget>
