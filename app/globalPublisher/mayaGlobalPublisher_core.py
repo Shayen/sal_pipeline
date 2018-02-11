@@ -70,7 +70,12 @@ class mayaGlobalPublisher_core(object):
 		output_file = destination_path
 
 		# Export selection "Geo_Grp"
+		if not cmds.objExists("Geo_grp") and not cmds.objExists("Set_grp") :
+			logger.error("Cannot create hero file : No Geo_grp or Set_Grp.")
+			return False
+
 		cmds.select("Geo_grp")
+		# cmds.select("Set_grp")
 		cmds.file(output_file, type='mayaAscii', exportSelected = True, f=True )
 		cmds.select(cl=True)
 		
