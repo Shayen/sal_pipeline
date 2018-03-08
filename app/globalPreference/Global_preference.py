@@ -17,7 +17,7 @@ except ImportError:
 
 try:
 	from src import env
-	reload(env)
+	# reload(env)
 	getEnv 	= env.getEnv()
 	modulepath = getEnv.modulePath()
 
@@ -26,13 +26,13 @@ except ImportError :
 	print (modulepath)
 
 from src import utils
-reload(utils)
+# reload(utils)
 
 import Global_preference_window_projectWidget 
-reload(Global_preference_window_projectWidget)
+# reload(Global_preference_window_projectWidget)
 
 from src import log
-reload(log)
+# reload(log)
 
 logger = log.logger("globalPreference")
 logger = logger.getLogger()

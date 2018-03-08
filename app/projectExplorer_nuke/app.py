@@ -17,14 +17,15 @@ except ImportError:
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
 import core
-reload(core)
-reload(env)
+# reload(core)
+# reload(env)
 # info = env.nuke_info()
 
 __app_version__ = "1.1"
 # v0.1
 # v1.0 : add variable to remember last time working sequence
 # v1.1 : Show thumbnail
+# v1.2 : set workspace to recent.
 
 getEnv 	= env.getEnv()
 modulepath = getEnv.modulePath()
@@ -102,6 +103,10 @@ class nuke_projectExplorer( QMainWindow ):
 
 		# Setup last time used project
 		recentPrj = core.get_recentWorkingProject()
+
+		if recentPrj not in projectList:
+			return False
+
 		if recentPrj :
 			index = self.ui.comboBox_project.findText(recentPrj)
 
@@ -128,6 +133,10 @@ class nuke_projectExplorer( QMainWindow ):
 
 		# Setup last time used sequence
 		recentSeq = core.get_recentWorkingSequence()
+
+		if recentSeq not in seqList:
+			return False
+
 		if recentSeq :
 			index = self.ui.comboBox_sequence.findText(recentSeq)
 
@@ -150,6 +159,10 @@ class nuke_projectExplorer( QMainWindow ):
 
 		# Setup last time used shot
 		recentShot = core.get_recentWorkingShot()
+
+		if recentShot not in allShot:
+			return False
+
 		if recentShot :
 			item = self.ui.listWidget_scriptShot.findItems(recentShot, Qt.MatchExactly)[0]
 

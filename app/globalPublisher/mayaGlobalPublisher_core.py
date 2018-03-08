@@ -1,13 +1,13 @@
 import maya.cmds as cmds
 
-import sys, os, shutil, logging, json, time
+import sys, os, shutil, logging, json, time, traceback
 
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
 import mayaGlobalPublisher_util as pubUtil
-reload(pubUtil)
-reload(utils)
-reload(env)
+# reload(pubUtil)
+# reload(utils)
+# reload(env)
 
 logger = logging.getLogger( __name__.split('.')[-1] )
 logger.addHandler(logging.NullHandler())
@@ -30,7 +30,7 @@ class mayaGlobalPublisher_core(object):
 	def __init__(self):
 		pass
 
-	def saveIncrement(self):
+	def saveIncrement(self, comment = ''):
 		filename 		= cmds.file(q=True,sn=True, shn=True)
 		new_fileName 	= myInfo.get_nextVersion(filename = True )
 		currentPath 	= os.path.dirname( cmds.file(q=True, sn=True) )
@@ -38,7 +38,8 @@ class mayaGlobalPublisher_core(object):
 		result = "None"
 
 		# save increment
-		cmds.file( rename='%s/%s'%( currentPath, new_fileName ) )
+		new_filePath = '%s/%s'%( currentPath, new_fileName )
+		cmds.file( rename=new_filePath )
 		result =  cmds.file( save=True, type='mayaAscii' )
 
 		# set Thumbnail +
@@ -49,6 +50,21 @@ class mayaGlobalPublisher_core(object):
 
 		shutil.copy2(self._pubThumbnail_Path, '/'.join([thumbnail_path,thumbnail_filename]))
 		print( "# Capture thumbnail : %s"%(   '/'.join([thumbnail_path,thumbnail_filename])) )
+		
+		if comment == '' :
+			comment = 'Publish and save increment.'
+
+		# save comment
+		if comment != '' :
+			try :
+
+				comment = '[Publish] ' + comment
+
+				saveComment( filename = new_filePath, comment = comment )
+				logger.info("Save comment : " + comment)
+			except Exception as e :
+				logger.error("Cannot save comment : " + str(e))
+				traceback.print_exc()
 
 		return result
 
@@ -122,20 +138,29 @@ class mayaGlobalPublisher_core(object):
 
 		Pattern :
 			{
-			    "model": {
+			    "model": [
+				    {
+				        "filename": "",
+				        "publisher": "",
+				        "date": "",
+				        "comment": "",
+				        "cache": []
+				    },
+				    {
+				    	"filename": "",
+				        "publisher": "",
+				        "date": "",
+				        "comment": "",
+				        "cache": []
+				    }
+			    ],
+			    "texture": [{
 			        "filename": "",
 			        "publisher": "",
 			        "date": "",
 			        "comment": "",
 			        "cache": []
-			    },
-			    "texture": {
-			        "filename": "",
-			        "publisher": "",
-			        "date": "",
-			        "comment": "",
-			        "cache": []
-			    }
+			    }]
 			}
 		'''
 		
@@ -146,25 +171,45 @@ class mayaGlobalPublisher_core(object):
 			os.mkdir(os.path.dirname(pubdata_file))
 			logger.info ("Create folder : " + os.path.dirname(pubdata_file) )
 
-		f = open(pubdata_file, 'w+')
+		if not os.path.exists(pubdata_file) :
+			f = open(pubdata_file, 'w')
+			f.write("{}")
+			f.close()
+
+		f = open(pubdata_file, 'r')
 		data = {}
 		if os.path.exists( pubdata_file ):
 			# Load Json data
 			try:
-				data = json.load(f)
-			except ValueError :
+				read_data = f.read()
+				data = json.loads(read_data)
+			except ValueError as e:
+				logger.exception(str(e))
 				data = {}
-			
+		f.close()
+
+		# Check {task} exists ?
+		if not data.has_key(task):
+			# Define data[task] as list
+			data[task] = []
+		else :
+			# Change data type
+			if type(data[task]) == dict():
+				tmp_data 	= data[task]
+				data[task] 	= [tmp_data]
+
 		# Modify data [Create / Update]
-		data['task'] = {}
-		data['task']['filename']	= filename
-		data['task']['publisher']	= user
-		data['task']['date']		= date
-		data['task']['comment']		= comment
-		data['task']['cache']		= cache
+		pub_data = {}
+		pub_data['filename']	= filename
+		pub_data['publisher']	= user
+		pub_data['date']		= date
+		pub_data['comment']		= comment
+		pub_data['cache']		= cache
 
+		data[task].append(pub_data)
+
+		f = open(pubdata_file, 'w')
 		json.dump(data, f, indent = 2)
-
 		f.close()
 
 	def export_GPUCache(self):
@@ -177,6 +222,8 @@ class mayaGlobalPublisher_core(object):
 			result 		= pubUtil.exportGpuCache("Geo_grp", dest, filename)
 
 			logger.info ("Export cache : " + result)
+
+		return ('/'.join([dest, filename]))
 
 	def export_objBBox(self):
 		'''Export object boundingbox'''
@@ -207,7 +254,8 @@ class mayaGlobalPublisher_core(object):
 				# print 'added new layer %s to %s' % (out, output_file)
 				logger.info("Create BoundingBox : " + output_file)
 				return True
-			# return True
+			
+			return output_file
 
 	def export_sceneAssembly(self):
 		'''Create scene Assembly'''
@@ -232,6 +280,8 @@ class mayaGlobalPublisher_core(object):
 			# print 'added new layer %s to %s' % (out, output_file)
 			logger.info ("Create scene assembly : " + pub_filepath)
 			return True
+
+		return output_file
 
 	def export_RSProxy(self):
 		''' 
@@ -267,6 +317,49 @@ class mayaGlobalPublisher_core(object):
 			# print 'added new layer %s to %s' % (out, output_file)
 			logger.info (out)
 			return True
+
+		return output_file
+
+	
+def saveComment(filename, comment):
+	''' Save comment data to data.json file '''
+
+	info  = env.getInfo(path=filename)
+	filename  = info.get_fileName() 
+	workspace = info.get_workspace()
+	task = info.get_task()
+	name  = info.get_name()
+
+	dataFile = workspace + "/data.json"
+
+	# Create file
+	if not os.path.exists(dataFile):
+
+		data = {task: {filename : comment}}
+		f = open(dataFile, 'w')
+		f.write(json.dumps( data, indent = 4 ))
+		f.close()
+
+	# Update data
+	else :
+		try :
+			f = open(dataFile,'r')
+			raw_data = json.loads(f.read())
+			f.close()
+		except :
+			raw_data = {}
+
+		if not raw_data.has_key(task):
+			raw_data[task] = {}
+
+		raw_data[task][filename] = comment
+
+		# Write file
+		f = open(dataFile, 'w')
+		f.write(json.dumps( raw_data, indent = 4 )) 
+		f.close()
+
+	return True
 
 if __name__ == '__main__':
 	app =mayaGlobalPublisher_core()

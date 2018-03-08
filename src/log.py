@@ -2,7 +2,7 @@
 import os, datetime, logging, __main__
 
 import env
-reload(env)
+# reload(env)
 env = env.getEnv()
 
 modulePath = env.modulePath()

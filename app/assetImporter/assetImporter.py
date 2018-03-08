@@ -28,8 +28,8 @@ except ImportError:
 
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
-reload(utils)
-reload(env)
+# reload(utils)
+# reload(env)
 
 getEnv 	= env.getEnv()
 getInfo = env.getInfo()

@@ -20,11 +20,13 @@ from ...src import env
 from ...src import utils
 from ...src import log
 import custom_widget
+import projectExplorer_utils as explorerUtils
 
-reload(custom_widget)
-reload(utils)
-reload(env)
-reload(log)
+# reload(explorerUtils)
+# reload(custom_widget)
+# reload(utils)
+# reload(env)
+# reload(log)
 
 logger = log.logger("projectExplorer")
 logger = logger.getLogger()
@@ -36,7 +38,7 @@ import maya.OpenMayaUI as apiUI
 getEnv 	= env.getEnv()
 modulepath = getEnv.modulePath()
 
-__APP_version__ = '1.5.1'
+__APP_version__ = '1.5.5'
 # V1.0.0 : All function running well.
 # V1.1.0 : Support pySide2, not list "_thummbnail folder in sequence list"
 # V1.2.0 : Support multi project switching
@@ -49,6 +51,10 @@ __APP_version__ = '1.5.1'
 # V1.5.0 : Insert Logging
 # V1.5.1 : Add ability to Add/Reload SAL_pipeline shelf
 # V1.5.2 : Add update snapshot
+# V1.5.3 : Add comment[load/add]
+# V1.5.4 : [Fix] save increment, ignore *.xgen when count a version.
+# V1.5.5 : change open dialogbox to ['Open', 'No'] instead of ['Yes'. 'No']
+# V1.5.6 : Revert back open confirm dialogbox to simple
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -99,6 +105,8 @@ def objString(string):
 
 class salProjectExplorer( QMainWindow ):
 	"""A bare minimum UI class - showing a .ui file inside Maya 2016"""
+
+	commentData = {}
 
 	def __init__(self,parent=None):
 		''' init '''
@@ -176,6 +184,7 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.pushButton_openExplorer.clicked.connect(self.openExplorer_onclick )
 		self.ui.pushButton_saveIncrement.clicked.connect(self.pushButton_saveIncrement_onclick)
 		self.ui.pushButton_addnewCentralItem.clicked.connect(self.pushButton_addnewCentralItem_onClick)
+		self.ui.label_comment.editingFinished.connect(self.label_comment_editingFinished)
 
 		# Make QLabel object cliackable.
 		clickable(self.ui.label_path_editable).connect( self.openExplorer_onclick )
@@ -624,6 +633,9 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.label_path_editable.setText(path)
 		self.refresh('task_list')
 
+		# Load comment data 
+		self.commentData = explorerUtils.getComment( workspace =  path )
+
 	def listWidget_version_itemClicked(self):
 
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
@@ -664,6 +676,15 @@ class salProjectExplorer( QMainWindow ):
 		filename= myGetInfo.get_fileName()
 		artist  = myGetInfo._getUsername_fromPath()
 
+		# PATTERN : raw_data[task][filename] = comment
+		task = myGetInfo.get_task()
+		try :
+			# print (json.dumps(self.commentData, indent = 4))
+			# print ("self.commentData[{task}][{filename}]".format(task = task, filename = filename))
+			comment = self.commentData[task][filename]
+		except KeyError :
+			comment = '...'
+
 		# / set image
 		thumbnail_workSpace = myGetInfo.get_workspace()
 		thumbnail_file 		= myGetInfo.get_fileName(ext=False)+'.jpg'
@@ -674,12 +695,15 @@ class salProjectExplorer( QMainWindow ):
 
 		self.ui.label_ImagePlaceHolder.setPixmap(pixmap)
 
+		# Load comment
+		pass
+
 		# / list information field
 		self.ui.label_fileName.setText( filename )
 		self.ui.label_version.setText ( version )
 		self.ui.label_modDate.setText ( modDate )
 		self.ui.label_aetist.setText  ( artist )
-		self.ui.label_comment.setText ('...')
+		self.ui.label_comment.setText ( comment )
 
 	def tabWidget_currentChanged(self):
 		
@@ -744,17 +768,14 @@ class salProjectExplorer( QMainWindow ):
 				result =cmds.confirmDialog(	title 		=  'Save file',
 											message 	=  'File is unsave, Save this file?', 
 											button 		=  ['Yes','No'], 
-											defaultButton= 'Yes', 
+											defaultButton= 'Open', 
 											cancelButton = 'No', 
 											dismissString= 'No' 
 											)
 
-				# When user say 'YES' then Save file
+				# When user say 'Yes' then do nothing.
 				if result == 'Yes':
-					cmds.SaveScene()
-				else:
-					# return False
-					pass
+					return
 
 			# Flush scene
 			cmds.file( new = True, force = True ) 
@@ -787,6 +808,23 @@ class salProjectExplorer( QMainWindow ):
 
 			cmds.optionVar( sv = ["sal_prjExpl", current_Step])
 
+	def label_comment_editingFinished(self):
+		''' Finished edit update comment '''
+
+		filepath = filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
+		comment  = self.ui.label_comment.text()
+
+		info = env.getInfo(path = filepath)
+
+		# Save comment
+		try :
+			explorerUtils.saveComment( filename = filepath, comment = comment )
+			logger.info("Save comment : " + comment)
+		except Exception as e :
+			logger.error("Cannot save comment : " + str(e))
+
+		self.commentData = explorerUtils.getComment( workspace =  info.get_workspace() )
+
 	def openExplorer_onclick(self):
 		'''
 			open Explorer
@@ -801,26 +839,9 @@ class salProjectExplorer( QMainWindow ):
 
 	def pushButton_saveIncrement_onclick(self):
 
-		# # When file have some change
-		# if cmds.file(q=True, modified=True) :
-
-		# 	result =cmds.confirmDialog(	title 		=  'Save file',
-		# 								message 	=  'File is unsave, Save this file?', 
-		# 								button 		=  ['Yes','No'], 
-		# 								defaultButton= 'Yes', 
-		# 								cancelButton = 'No', 
-		# 								dismissString= 'No' 
-		# 								)
-
-		# 	# When user say 'YES' then Save file
-		# 	if result == 'Yes':
-		# 		cmds.SaveScene()
-		# 	else:
-		# 		# return False
-		# 		pass
-
 		currentPath = self.ui.label_path_editable.text()
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+		comment = self.ui.lineEdit_comment.text()
 
 		sequence 	= self.ui.listWidget_sequence.currentItem()
 		currentShot	= self.ui.listWidget_object_center.currentItem()
@@ -844,7 +865,7 @@ class salProjectExplorer( QMainWindow ):
 			if tabText == 'shots':
 			
 				# Create next version
-				lastfilename = [ file for file in os.listdir( currentPath ) if os.path.isfile( currentPath +'/' + file ) ][-1]
+				lastfilename = [ file for file in os.listdir( currentPath ) if os.path.isfile( currentPath +'/' + file ) and not file.endswith('.xgen') ][-1]
 				
 				workType 	= 'film'
 				sequence 	= sequence.text()
@@ -862,7 +883,7 @@ class salProjectExplorer( QMainWindow ):
 			else :
 
 				# Create next version
-				lastfilename = [ file for file in os.listdir( currentPath ) if os.path.isfile( currentPath +'/' + file ) ][-1]
+				lastfilename = [ file for file in os.listdir( currentPath ) if os.path.isfile( currentPath +'/' + file ) and not file.endswith('.xgen') ][-1]
 				
 				workType  	= 'assets'
 				assetType 	= currentSubType.text()
@@ -908,11 +929,24 @@ class salProjectExplorer( QMainWindow ):
 		try:
 
 			# Save new version
-			cmds.file( rename='%s/%s'%( currentPath, filename ) )
+			filepath = '%s/%s'%( currentPath, filename )
+			cmds.file( rename = filepath )
 			result =  cmds.file( save=True, type='mayaAscii' )
 			workspace = '/'.join( currentPath.split('/')[:-2] )
 
-			logger.info("Increment save : " + '%s/%s'%( currentPath, filename ) )
+			logger.info("Increment save : " + filepath )
+
+			# Save comment
+			try :
+				explorerUtils.saveComment( filename = filepath, comment = comment )
+				logger.info("Save comment : " + comment)
+
+				self.commentData = explorerUtils.getComment( workspace =  workspace )
+				self.ui.lineEdit_comment.clear()
+
+			except Exception as e :
+				logger.error("Cannot save comment : " + str(e))
+
 
 			if workspace != '':
 				logger.info ('setup workspace : ' + workspace)

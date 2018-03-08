@@ -5,9 +5,9 @@ import datetime, os
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
 from sal_pipeline.src import log
-reload(env)
-reload(utils)
-reload(log)
+# reload(env)
+# reload(utils)
+# reload(log)
 
 logger = log.logger("renderSetting")
 logger = logger.getLogger()
@@ -70,8 +70,14 @@ class renderSetting_window :
 		cmds.text(l="Render path:",align="left")
 		cmds.textField("RenderPath_TextFieldGroup", tx = config['turntable']['path'])
 
-		cmds.text("\nasset Name :",align="left")
+		cmds.text("text_assetname",l="\nasset Name :",align="left")
 		cmds.textField("assetName_TextFieldGroup")
+
+		cmds.text("text_version",l="version :",align="left")
+		cmds.rowLayout(ad1 = True, nc = 2)
+		cmds.text("v")
+		cmds.textField("textField_version")
+		cmds.setParent("..")
 		cmds.text(l="")
 
 		cmds.button(l="set path",c = self.setRender)
@@ -79,8 +85,15 @@ class renderSetting_window :
 
 		# set to if entity is shot
 		if getInfo.isType() == 'shot' :
+			cmds.text("text_assetname", e=True, l = "\nshot Name" )
 			cmds.optionMenu("optionMenu_option", e=True, value = 'Shot')
 			self.optionmenu_onChange()
+
+		# set version
+		assetPath 	= cmds.textField("RenderPath_TextFieldGroup",q=True,tx=True)
+		assetPath 	+= '/' + cmds.textField("assetName_TextFieldGroup",q=True,tx=True)
+		version 	= "%04d"%int(_checkversion(assetPath))
+		cmds.textField("textField_version", e=True, tx = version)
 
 		return layout
 
@@ -134,7 +147,8 @@ class renderSetting_window :
 		currentTime = datetime.datetime.now().strftime('%H%M%S')
 
 		assetRenderPath = os.path.join( renderPath, assetName)
-		version 	= _checkversion(assetRenderPath)
+		# version 	= _checkversion(assetRenderPath)
+		version 	= "v%04d"%int(cmds.textField("textField_version",q=True, tx=True))
 
 		if renderPath != "" and assetName != "":
 			path_to_render = os.path.join( assetRenderPath, version)
@@ -159,6 +173,9 @@ class renderSetting_window :
 		else :
 			cmds.error("Field must not empty")
 			return False
+
+		# Result
+		logger.info (cmds.workspace( "images",q=True ,fileRuleEntry = True ))
 
 	def addAov(self, *args):
 		""" Add selected AOV to renderer """
@@ -225,19 +242,24 @@ def showUI():
 def _checkversion(assetRenderPath):
 	''' Check version folder '''
 	
+	# If path not exists return version 1.
 	if not os.path.exists(assetRenderPath):
-		return 'v0001'
+		return '0001'
 
-	allDir =  [d for d in os.listdir(assetRenderPath) if d.startswith('v')]
+	# Get max version
+	allDir =  [int(d.replace("v", "")) for d in os.listdir(assetRenderPath) if d.startswith('v')]
 	allDir.sort()
 
-	if allDir :
-		lastversion = int(allDir[-1].replace('v',''))
+	# Get max version.
+	if len(allDir) > 0 :
+		lastversion = max(allDir)
 		nextversion = lastversion + 1 
+
+	# If not version exists 1
 	else :
 		nextversion = 1
 
-	return ("v{version:04d}".format(version = nextversion))
+	return ("{version:04d}".format(version = nextversion))
 
 def clearUI():
 

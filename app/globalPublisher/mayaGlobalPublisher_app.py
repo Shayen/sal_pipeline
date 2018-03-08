@@ -30,9 +30,9 @@ except ImportError:
 from sal_pipeline.src import env
 from sal_pipeline.src import utils
 from sal_pipeline.src import log
-reload(utils)
-reload(env)
-reload(log)
+# reload(utils)
+# reload(env)
+# reload(log)
 
 # tool libs import
 import mayaGlobalPublisher_core 
@@ -235,12 +235,12 @@ class mayaGlobalPublisher( QMainWindow ):
 
 			#  save Increment
 			if self.isOptionCheck("checkBox_incrementSave"):
-				core.saveIncrement()
-				self.update_Status("save increment.")
+				result = core.saveIncrement(comment = self.ui.lineEdit_comment.text())
+				self.update_Status("save increment.", result)
 
 		# save to Hero file
-		core.creat_HeroFile()
-		self.update_Status("Create hero file.")
+		result = core.creat_HeroFile()
+		self.update_Status("Create hero file.", result)
 		self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# export Publish data via JSON
@@ -257,26 +257,26 @@ class mayaGlobalPublisher( QMainWindow ):
 
 		# Export GPU
 		if self.isOptionCheck("GPU_checkBox"):
-			core.export_GPUCache()
-			self.update_Status("Export GPU complete.")
+			result = core.export_GPUCache()
+			self.update_Status("Export GPU complete.", result)
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# Export BBox
 		if self.isOptionCheck("boundingBox_checkBox"):
-			core.export_objBBox()
-			self.update_Status("Export Bounding box complete.")
+			result = core.export_objBBox()
+			self.update_Status("Export Bounding box complete.", result)
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# Export Redshift proxy
 		if self.isOptionCheck("RSProxy_checkBox"):
-			core.export_RSProxy()
-			self.update_Status("Create Redshift proxy complete.")
+			result = core.export_RSProxy()
+			self.update_Status("Create Redshift proxy complete.", result)
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)			
 
 		# Export Scene Assembly
 		if self.isOptionCheck("sceneAssembly_checkBox"):
-			core.export_sceneAssembly()
-			self.update_Status("Create Scene assembly complete.")
+			result = core.export_sceneAssembly()
+			self.update_Status("Create Scene assembly complete.", result)
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		self.update_Status("===== Publish complete =====")
@@ -295,12 +295,16 @@ class mayaGlobalPublisher( QMainWindow ):
 
 		return is_checked
 
-	def update_Status(self, message):
+	def update_Status(self, message, extra = None):
 		item = QListWidgetItem(message)
 		self.ui.listWidget_allStatus.addItem(item)
 		QCoreApplication.processEvents()
 
-		logger.info (message)
+		if extra != None :
+			extra = ' : ' + str(extra)
+			logger.info (message + extra )
+		else :
+			logger.info (message )
 
 	def closeWindow(self):
 		clearUI()

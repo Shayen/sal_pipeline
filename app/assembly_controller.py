@@ -108,7 +108,7 @@ def switch_to_ref(*args):
 				cmds.file(filepath, r=True, namespace = namespace,gr=True, gn= group_name)
 				
 				# geo_grp = "{namespace}:Geo_grp".format(namespace = namespace)
-				
+				cmds.xform(group_name, piv=(0,0,0), ws=True)
 				cmds.parent(group_name, switch_grp)
 				cmds.select(group_name)
 				cmds.move(pos.x,pos.y,pos.z,group_name, relative=True)

@@ -46,25 +46,15 @@
         <property name="fieldGrowthPolicy">
          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
         </property>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="comboBox_project"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Sequence :</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QComboBox" name="comboBox_sequence"/>
-        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_2">
           <property name="text">
            <string>Project :</string>
           </property>
          </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="comboBox_project"/>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_5">
@@ -77,6 +67,16 @@
          <widget class="QLabel" name="label_username">
           <property name="text">
            <string>TextLabel</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="comboBox_sequence"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Sequence :</string>
           </property>
          </widget>
         </item>
