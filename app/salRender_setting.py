@@ -88,6 +88,8 @@ class renderSetting_window :
 			cmds.text("text_assetname", e=True, l = "\nshot Name" )
 			cmds.optionMenu("optionMenu_option", e=True, value = 'Shot')
 			self.optionmenu_onChange()
+		else :
+			cmds.textField("assetName_TextFieldGroup", e=True, tx = getInfo.get_name() )
 
 		# set version
 		assetPath 	= cmds.textField("RenderPath_TextFieldGroup",q=True,tx=True)

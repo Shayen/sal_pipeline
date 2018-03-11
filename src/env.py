@@ -1,7 +1,9 @@
-import os, sys, json, socket, shutil
+import os, sys, json, socket, shutil, logging
 # import maya.mel as mel
 
 modulePath = '/'.join( os.path.dirname( os.path.abspath(__file__) ).split('\\')[:-1] )
+
+logger = logging.getLogger()
 
 class getEnv(object):
 
@@ -165,7 +167,6 @@ class getEnv(object):
 class getInfo(object):
 
 	def __init__(self,projectName=None,path=None):
-		import maya.cmds as cmds
 
 		self.env = getEnv()
 
@@ -177,6 +178,7 @@ class getInfo(object):
 			self.filename = path.split('/')[-1]
 			# self.user = self._getUsername_fromPath()
 		else:
+			import maya.cmds as cmds
 			self.path 	  = cmds.file( q=True, sn=True )
 			self.filename = cmds.file( q=True, sn=True, shn=True )
 			# self.user = self.getUsername()
@@ -377,7 +379,7 @@ class getInfo(object):
 			return allfile[-1]
 
 		else:
-			cmds.error('Type not match : ' + self.isType())
+			logger.error('Type not match : ' + self.isType())
 
 	def get_nextVersion(self, filename=False):
 
@@ -415,7 +417,7 @@ class getInfo(object):
 			name = sub_path[3]
 
 		else:
-			cmds.error('type not found : ' + self.isType())
+			logger.error('type not found : ' + self.isType())
 
 		return name
 
@@ -427,7 +429,7 @@ class getInfo(object):
 			return self.splitPath_data[2]
 
 		else:
-			cmds.warning('type is not shot : ' + self.isType())
+			logger.warning('type is not shot : ' + self.isType())
 			return False
 
 	def get_shot(self):
@@ -438,7 +440,7 @@ class getInfo(object):
 			return self.splitPath_data[3]
 
 		else:
-			cmds.warning('type is not shot : ' + self.isType())
+			logger.warning('type is not shot : ' + self.isType())
 			return False
 
 	def getThumbnail(self, workspace, filename, perfile=False):
@@ -511,10 +513,10 @@ class nuke_info(object):
 		self.projectPath = self.globalConfigureData['setting']['projects'][self.projectName]['project_path']
 		self.projectCode = self.globalConfigureData['setting']['projects'][self.projectName]['project_code']
 
-		self.postProductionPath = self.projectPath 		  + '/post_production'
-		self.renderPath 	 	= self.postProductionPath + '/output/render'
-		self.nukeScriptsPath	= self.postProductionPath + '/composite/nukeScripts' 
-		self.footagePath 		= self.postProductionPath + '/footage' 
+		self.postProductionPath = self.projectPath + '/post_production'
+		self.renderPath 		= self.postProductionPath + '/output/compOut'
+		self.nukeScriptsPath 	= self.postProductionPath + '/composite/nukeScripts'
+		self.footagePath 		= self.postProductionPath + '/footage'
 
 		# // Will set in function 'set_projectConfigFilePath'
 		self.projectConfigFilePath = ''

@@ -235,48 +235,70 @@ class mayaGlobalPublisher( QMainWindow ):
 
 			#  save Increment
 			if self.isOptionCheck("checkBox_incrementSave"):
-				result = core.saveIncrement(comment = self.ui.lineEdit_comment.text())
-				self.update_Status("save increment.", result)
+				try :
+					result = core.saveIncrement(comment = self.ui.lineEdit_comment.text())
+					self.update_Status("save increment.", result)
+				except Exception as e:
+					logger.exception(e)
 
 		# save to Hero file
-		result = core.creat_HeroFile()
-		self.update_Status("Create hero file.", result)
+		try :
+			result = core.creat_HeroFile()
+			self.update_Status("Create hero file.", result)
+		except Exception as e :
+			logger.exception(e)
+
 		self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# export Publish data via JSON
-		core.export_pubData(task 	= myInfo.get_task(), 
-							filename= myInfo.get_fileName(), 
-							user 	= myInfo.getUsername(), 
-							date 	= self.ui.label_dateTime.text(), 
-							comment = self.ui.lineEdit_comment.text(),
-							cache 	= self._getCheckedOption())
-		self.update_Status("Create publish metadata.")
+		try :
+			core.export_pubData(task 	= myInfo.get_task(), 
+								filename= myInfo.get_fileName(), 
+								user 	= myInfo.getUsername(), 
+								date 	= self.ui.label_dateTime.text(), 
+								comment = self.ui.lineEdit_comment.text(),
+								cache 	= self._getCheckedOption())
+			self.update_Status("Create publish metadata.")
+		except Exception as e :
+			logger.exception(e)
 
 		# **** EXPORT PIPELINE CACHE ***
 		self.ui.progressBar.setRange( 0, _count_step )
 
 		# Export GPU
 		if self.isOptionCheck("GPU_checkBox"):
-			result = core.export_GPUCache()
-			self.update_Status("Export GPU complete.", result)
+			try :
+				result = core.export_GPUCache()
+				self.update_Status("Export GPU complete.", result)
+			except Exception as e :
+				logger.exception(e)
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# Export BBox
 		if self.isOptionCheck("boundingBox_checkBox"):
-			result = core.export_objBBox()
-			self.update_Status("Export Bounding box complete.", result)
+			try :
+				result = core.export_objBBox()
+				self.update_Status("Export Bounding box complete.", result)
+			except Exception as e :
+				logger.exception(e)
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		# Export Redshift proxy
 		if self.isOptionCheck("RSProxy_checkBox"):
-			result = core.export_RSProxy()
-			self.update_Status("Create Redshift proxy complete.", result)
+			try :
+				result = core.export_RSProxy()
+				self.update_Status("Create Redshift proxy complete.", result)
+			except Exception as e :
+				logger.exception(e)
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)			
 
 		# Export Scene Assembly
 		if self.isOptionCheck("sceneAssembly_checkBox"):
-			result = core.export_sceneAssembly()
-			self.update_Status("Create Scene assembly complete.", result)
+			try :
+				result = core.export_sceneAssembly()
+				self.update_Status("Create Scene assembly complete.", result)
+			except Exception as e :
+				logger.exception(e)
 			self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
 
 		self.update_Status("===== Publish complete =====")

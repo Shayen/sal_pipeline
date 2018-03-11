@@ -811,7 +811,7 @@ class salProjectExplorer( QMainWindow ):
 	def label_comment_editingFinished(self):
 		''' Finished edit update comment '''
 
-		filepath = filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
+		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
 		comment  = self.ui.label_comment.text()
 
 		info = env.getInfo(path = filepath)

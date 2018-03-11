@@ -279,6 +279,8 @@ class nuke_projectExplorer( QMainWindow ):
 		current_seq  = self.ui.comboBox_sequence.currentText()
 		current_shot = self.ui.listWidget_scriptShot.currentItem().text()
 
+		nuke.tprint("splitPath_data : "+str(getInfo.splitPath_data))
+
 		# define version
 		if not os.listdir(currentpath) :
 			# - create version 0001
@@ -286,7 +288,10 @@ class nuke_projectExplorer( QMainWindow ):
 		
 		else :
 			# - create increment verison
-			version = getInfo.get_nextVersion() # INT
+			try  :
+				version = getInfo.get_nextVersion() # INT
+			except IndexError:
+				version = len(os.listdir(currentpath)) + 1 
 
 		filename = "{code}_{seq}_{shot}_comp_v{version}_{user}.nk".format( code = projectCode,
 																			seq = current_seq,
