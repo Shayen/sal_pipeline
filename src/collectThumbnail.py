@@ -5,14 +5,16 @@ import os, shutil
 # imagePath = "P:/smf_project/production/assets/prop/WoodenTreeB/_thumbnail/smf_prop_WoodenTreeB_model_v001_Nook.jpg"
 # newPath = "P:/smf_project/production/assets/prop/WoodenTreeB/_thumbnail/smf_prop_WoodenTreeB_model_v001_Nook_new.jpg"
 
-assetPath = "P:/smf_project/production/assets"
+assetPath = "P:/smf_project/production/film"
 dest_dit  = "P:/tmp/All_thumbnail"
 
 for assetType in os.listdir(assetPath):
 
-	for assetName in os.listdir(assetPath + '/' + assetType) :
+	for assetName in [i for i in os.listdir(assetPath + '/' + assetType) if os.path.isdir(assetPath + '/' + assetType + '/' + i)] :
 
-		for image in os.listdir(assetPath + '/' + assetType + '/' + assetName + '/_thumbnail'):
+		all_image = os.listdir(assetPath + '/' + assetType + '/' + assetName + '/_thumbnail')
+		all_image.sort(reverse=True)
+		for image in all_image:
 
 			if image.endswith(".jpg") :
 				path = (assetPath + '/' + assetType + '/' + assetName + '/_thumbnail/' + image)
@@ -27,3 +29,4 @@ for assetType in os.listdir(assetPath):
 
 
 				print ("copy : " + os.path.basename(path))
+				break

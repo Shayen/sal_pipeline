@@ -5,7 +5,6 @@ import os
 _windowObjName   = "sceneAssembly_control"
 _windowTitleName = "Scene Assembly controller"
 
-
 def cleanUI():
 	if cmds.window( _windowObjName, exists=True ):
 		cmds.deleteUI(_windowObjName)
@@ -28,68 +27,117 @@ def get_assemblyReference(mode=None):
 
 		# Get name space
 		for node in sels :
-			namespace = node.namespace()
+			parent_namespace = ""
+			namespace = node.name().split(":")
 
 			# If have namespace
-			if namespace :
-				asm_nodeName = namespace.replace("_NS", "")
+			if len(namespace) > 1 :
 
-				if asm_nodeName not in result :
-					result.append(asm_nodeName)
+				child_namespace = namespace[-2]
 
-			# Check for "assemblyReference" node
+				# Type : ASM
+				if pm.nodeType(node) == "assemblyReference" :
+					nodename = parent_namespace+node.name()
+					if nodename not in result :
+						result.append(nodename)
+				
+				# Type : Not ASM
+				else :
+					# Get parent Namespace
+					if len(namespace) >= 3 :
+						parent_namespace = ":".join(namespace[:-2]) + ":"
+
+					# Get assembly node name
+					asm_nodeName = parent_namespace + child_namespace.replace("_NS", "")
+					if asm_nodeName not in result :
+						result.append(asm_nodeName)
+
+			# Not have name space
 			else :
+				# Check for "assemblyReference" node
 				if pm.nodeType(node) == "assemblyReference" :
 					if node not in result :
 						result.append(node.name())
 
 	return result
 
-def setActiveRep( assemblyNode, name ) : 
+def setActiveRep( assemblyNodes, name ) : 
 	''' set active representations ''' 
-	try :
-		cmds.assembly(assemblyNode, e = True, active = name)
-	except RuntimeError as e :
-		print ("RuntimeError > skip : " + assemblyNode)
-	except TypeError as e :
-		print ("Type Error > skip : " + assemblyNode)
+
+	amount = len(assemblyNodes)
+	exclude_nodes = cmds.textScrollList("exclude_list", q=True, allItems = True)
+	exclude_nodes = exclude_nodes if exclude_nodes != None else list()
+
+	print amount
+	progress = cmds.progressWindow( title='Switching...',progress=0,max = int(amount),isInterruptable=True )
+
+	cmds.refresh()
+
+	for indx,asm in enumerate(assemblyNodes) :
+		# Check progress bar cancelation
+		if cmds.progressWindow( progress, query=True, isCancelled=True ) :
+			break
+
+		is_ignore = True if asm in exclude_nodes else False
+		
+		try :
+			if cmds.assembly(asm, q = True, active = True) != name and not is_ignore:
+				cmds.assembly(asm, e = True, active = name)
+		except RuntimeError as e :
+			print ("RuntimeError > skip : " + asm)
+		except TypeError as e :
+			print ("TypeError > skip : " + asm)
+		except ValueError as e:
+			print ("ValueError > skip : " + asm)
+
+		cmds.progressWindow( progress,  
+			edit=True, 
+			step=1, 
+			status=('Switching to '+name+' : ' + str(indx+1) + '/' + str(amount) ) )
+
+	# if cmds.progressWindow( progress, query=True, progress=True ) >= 100 :
+	cmds.progressWindow( progress, endProgress	= True)
 
 def showAllLocator(*args):
 	'''
 	# Result: [u'myLocator', u'Gpu', u'BBox'] # 	
 	'''
-	all_ref = get_assemblyReference()
-	for node in all_ref :
-		setActiveRep(node, "Locator")
+	setActiveRep( get_assemblyReference(), "Locator" )
 
 def showAllGpu(*args):
 	'''
 	# Result: [u'myLocator', u'Gpu', u'BBox'] # 	
 	'''
-	all_ref = get_assemblyReference()
-	for node in all_ref :
-		setActiveRep(node, "Gpu")
+	setActiveRep( get_assemblyReference(), "Gpu" )
 
 def showAllBBox(*args):
 	'''
 	# Result: [u'myLocator', u'Gpu', u'BBox'] # 	
 	'''
-	all_ref = get_assemblyReference()
-	for node in all_ref :
-		setActiveRep(node, "BBox")
+	setActiveRep( get_assemblyReference(), "BBox" )
+
+def showAllRsProxy(*args):
+	'''
+	# Result: [u'myLocator', u'Gpu', u'BBox'] # 	
+	'''
+	setActiveRep( get_assemblyReference(), "RsProxy" )
 
 def showAllRender(*args):
 	'''
 	# Result: [u'myLocator', u'Gpu', u'BBox'] # 	
 	'''
-	all_ref = get_assemblyReference()
-	for node in all_ref :
-		setActiveRep(node, "Render")
+	result = cmds.confirmDialog( 
+		title='Confirm', 
+		message='Are you sure?\nSwith to \'RENDER\' will take a long time.', 
+		button=['Yes','No'],
+		defaultButton='Yes',
+		cancelButton='No',
+		dismissString='No' )
 
-def showAllRsProxy(*args):
-	all_ref = get_assemblyReference()
-	for node in all_ref :
-		setActiveRep(node, "RsProxy")
+	if result != 'Yes' :
+		return False
+
+	setActiveRep( get_assemblyReference(), "Render" )
 
 def switch_to_ref(*args):
 
@@ -150,7 +198,7 @@ def switch_to_ref(*args):
 				cmds.scale(pos.sx,pos.sy,pos.sz)
 				cmds.select(cl=True)
 
-def selectFromView():
+def selectFromView(*args):
 	import maya.OpenMaya as om
 	import maya.OpenMayaUI as omu
 
@@ -163,14 +211,51 @@ def hideFromCamera(*args):
 	sels = cmds.ls(sl=True)
 
 	# List all ASM
-	all_ASM = selected_ASM = get_assemblyReference()
+	all_ASM = get_assemblyReference(mode = 'all')
 
 	# List select ASM
 	selected_ASM = get_assemblyReference(mode="selected")
 
-	for node in all_ASM :
-		if node not in selected_ASM :
-			setActiveRep(node, "Locator")
+	nodes = set(all_ASM).difference(set(selected_ASM))
+	setActiveRep(nodes, "Locator")
+
+	cmds.select(cl=True)
+
+def hideLocatorRep(*args):
+	all_asm = get_assemblyReference(mode = "all")
+
+	for asm in all_asm :
+		if cmds.assembly(asm, q = True, active = True) == "Locator":
+			cmds.hide(asm)
+
+def showAllASM(*args):
+	all_asm = get_assemblyReference(mode = "all")
+
+	for asm in all_asm :
+		cmds.showHidden(asm)
+
+def assembly_control_mode_onChange(mode):
+	cmds.button("ShowAllLocator", 	e=True, l = "Show " + mode + " Locator")
+	cmds.button("ShowAllBBox", 		e=True, l = "Show " + mode + " BBox")
+	cmds.button("showAllGPU", 		e=True, l = "show " + mode + " GPU")
+	cmds.button("showAllProxy", 	e=True, l = "show " + mode + " Proxy")
+	cmds.button("showAllRender", 	e=True, l = "show " + mode + " Render")
+
+def addExcludeItem(*args):
+	all_selection = get_assemblyReference(mode = 'selected')
+	exists_items  = cmds.textScrollList("exclude_list", q=True, allItems = True)
+
+	if exists_items :
+		items = list(set(all_selection).difference(exists_items))
+	else : 
+		items = all_selection
+
+	cmds.textScrollList("exclude_list", e=True, append = items)
+
+def deleteExcludeItem(*args):
+	selectedItems = cmds.textScrollList("exclude_list", q=True, selectItem = True)
+	# removeItem
+	cmds.textScrollList("exclude_list", e=True, removeItem = selectedItems)
 			
 def run():
 
@@ -181,26 +266,54 @@ def run():
 	cmds.columnLayout(adj=True,rowSpacing=2)
 	cmds.text("\nScene assembly controller\n")
 
-	cmds.optionMenu( "assembly_control_mode",label='mode:' )
-	cmds.menuItem( label='all' )
+	cmds.optionMenu( "assembly_control_mode",label='mode:',changeCommand = assembly_control_mode_onChange )
 	cmds.menuItem( label='selected' )
+	cmds.menuItem( label='all' )
 
-	cmds.button("Show all Locator", h = 40, c = showAllLocator )
-	cmds.button("Show all BBox", 	h = 40, c = showAllBBox )
-	cmds.button("show all GPU", 	h = 40, c = showAllGpu )
-	cmds.button("show all Proxy", 	h = 40, c = showAllRsProxy )
-	cmds.button("show all Render", 	h = 40, c = showAllRender )
-	cmds.separator(h=5)
+	cmds.rowLayout(nc=2,adj=1)
+
+	# ---------------------------------------------------------------
+	cmds.columnLayout(adj=True)
+	cmds.text(l="Exclude nodes :")
+	cmds.textScrollList("exclude_list", allowMultiSelection=True)
+	# - - - - - - - - - - - - - - 
+	cmds.rowLayout(nc=2,adj=1)
+	cmds.button(l="add selection" , c= addExcludeItem)
+	cmds.button(l="delete selection", c = deleteExcludeItem)
+	cmds.setParent("..")
+	cmds.setParent("..")
+	# - - - - - - - - - - - - - - 
+	cmds.columnLayout(adj=True,rowSpacing=2)
+	cmds.button("ShowAllLocator",   l="Show all Locator"	, h = 40, c = showAllLocator )
+	cmds.button("ShowAllBBox", 		l="Show all BBox"		, h = 40, c = showAllBBox )
+	cmds.button("showAllGPU", 		l="show all GPU"		, h = 40, c = showAllGpu )
+	cmds.button("showAllProxy", 	l="show all Proxy"		, h = 40, c = showAllRsProxy )
+	cmds.button("showAllRender", 	l="show all Render"		, h = 40, c = showAllRender )
+	cmds.setParent("..")
+	cmds.setParent("..")
+
+	cmds.separator(h=5) # ------------------------------------------
+
+	cmds.columnLayout(adj=True,rowSpacing=2)
 	cmds.text(l = "Switch to ref :", align= "left")
 	cmds.button("Swith to ref", c= switch_to_ref)
 	cmds.separator(h=5)
+
+	cmds.button("Select from view", c=selectFromView)
 	cmds.button("Hide geo out of camera", c = hideFromCamera)
-	cmds.setParent("..")
+	cmds.separator(h=5)
+
+	cmds.text(l = "Hide / Show :", align= "left")
+	cmds.button("Hide Locator representation", c=hideLocatorRep)
+	cmds.button("Show all assemblies", c = showAllASM)
+	cmds.setParent("..") # ------------------------------------------
+	cmds.setParent("..") # Main layout
 	
 	cmds.showWindow( _windowObjName )
 	
 	cmds.window( _windowObjName, e=True, w=200, h = 100 )
 
 	# print (cmds.optionMenu("assembly_control_mode", q=True, v=True))
+	assembly_control_mode_onChange('selected')
 
 run()

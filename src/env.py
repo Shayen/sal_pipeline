@@ -417,6 +417,7 @@ class getInfo(object):
 			name = sub_path[3]
 
 		else:
+			name = None
 			logger.error('type not found : ' + self.isType())
 
 		return name

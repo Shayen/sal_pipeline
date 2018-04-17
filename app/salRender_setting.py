@@ -249,7 +249,7 @@ def _checkversion(assetRenderPath):
 		return '0001'
 
 	# Get max version
-	allDir =  [int(d.replace("v", "")) for d in os.listdir(assetRenderPath) if d.startswith('v')]
+	allDir =  [int(d.replace("v", "")) for d in os.listdir(assetRenderPath) if d.startswith('v') and os.path.isdir(assetRenderPath + '/'+d)]
 	allDir.sort()
 
 	# Get max version.
