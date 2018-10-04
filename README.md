@@ -47,6 +47,12 @@ I use computer name to mapped with username.
 
 
 ## Overall Preview
+
+### Pipeline
+![Pipeline](images/pipeline.png)
+When Finished in every process, Users need to publish their work by using Global Publish Tool. 
+The tools will generate and prepare datas for next process.
+
 #### Project Explorer
 ![ProjectExplorer](images/projectExplorer.gif)
 
@@ -64,4 +70,7 @@ I use computer name to mapped with username.
 ![render setting](images/rendersetting.gif)
 
 #### Nuke Explorer
-![render setting](images/nuke_Explorer.gif)
+![Nuke Explorer](images/nuke_Explorer.gif)
+
+#### AOV splitter
+![aovsplitter](images/aovsplitter.gif)
