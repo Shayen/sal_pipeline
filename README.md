@@ -63,4 +63,7 @@ I use computer name to mapped with username.
 ![Maya Scene assembly controller](images/asmController.gif)
 
 #### Render setting tool
-![render setting](rendersetting.gif)
+![render setting](images/rendersetting.gif)
+
+#### Nuke Explorer
+![render setting](images/nuke_Explorer.gif)
