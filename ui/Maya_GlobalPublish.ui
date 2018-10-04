@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>600</height>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -112,32 +112,56 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
+            <widget class="QCheckBox" name="checkBox_incrementSave">
              <property name="text">
-              <string>Alembic</string>
+              <string>save increment</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_2">
+            <widget class="QCheckBox" name="GPU_checkBox">
              <property name="enabled">
               <bool>true</bool>
              </property>
              <property name="text">
-              <string>OBJ</string>
+              <string>Pipeline cache (GPU)</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_3">
+            <widget class="QCheckBox" name="boundingBox_checkBox">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="text">
+              <string>Bounding box</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="sceneAssembly_checkBox">
+             <property name="text">
+              <string>Scene assembly</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="RSProxy_checkBox">
+             <property name="text">
+              <string>Redshift proxy</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="obj_checkBox">
              <property name="enabled">
               <bool>false</bool>
              </property>
              <property name="text">
-              <string>FBX</string>
+              <string>OBJ</string>
              </property>
             </widget>
            </item>
@@ -171,7 +195,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBox_5">
+            <widget class="QCheckBox" name="turnTable_checkBox">
              <property name="enabled">
               <bool>true</bool>
              </property>
@@ -355,7 +379,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Cancel</string>
+         <string>close</string>
         </property>
        </widget>
       </item>

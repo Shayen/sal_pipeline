@@ -1,8 +1,4 @@
-import maya.cmds as cmds
-
-# import PySide.QtCore as QtCore
-# import PySide.QtGui	 as QtGui
-# import PySide.QtUiTools as QtUiTools
+# src/utils.py
 
 # import pyside
 try:
@@ -10,20 +6,20 @@ try:
 	from PySide2 import QtGui
 	from PySide2 import QtWidgets
 	from PySide2 import QtUiTools
-	from PySide2 import __version__
-	import shiboken2
+	from PySide2 import __version__ as QtVersion
+	# import shiboken2
 
 except ImportError:
 	from PySide import QtCore
 	from PySide import QtGui
 	from PySide import QtUiTools
-	from PySide import __version__
-	import shiboken
+	from PySide import __version__ as QtVersion
+	# import shiboken
   
-import os, sys, zipfile
+import os, sys, zipfile, logging
 
-from sal_pipeline.src import env
-reload(env)
+logger = logging.getLogger( __name__.split('.')[-1] )
+logger.addHandler(logging.NullHandler())
 
 class windows(object):
 
@@ -43,18 +39,54 @@ class windows(object):
 
 			return : input message, False if cancle
 		'''
+		# if
+		print ("Load : " + str(QtVersion))
+		print (str(QtVersion).split('.')[0])
 
-		if parent == None:
-			parent = QtGui.QWidget()
+		if int( str(QtVersion).split('.')[0] ) < 2 :
 
-		text, ok = QtGui.QInputDialog.getText(parent, title, message)
-		if ok:
-			pass
-		else:
-			text = False
-			print ('Cancle.')
+			if parent == None:
+				parent = QtGui.QWidget()
+
+			text, ok = QtGui.QInputDialog.getText(parent, title, message)
+			if ok:
+				pass
+			else:
+				text = False
+				print ('Cancle.')
+		else :
+
+			# Check open in maya
+			try:
+				import maya.cmds as cmds
+			except ImportError:
+				raise("Outside maya Skip.")
+				return
+
+			result = cmds.promptDialog(
+				title= title,
+				message= message,
+				button=['OK', 'Cancel'],
+				defaultButton='OK',
+				cancelButton='Cancel',
+				dismissString='Cancel')
+
+			if result == 'OK':
+				text = cmds.promptDialog(query=True, text=True)
+			else :
+				text = False
 
 		return text
+
+class IO:
+
+	def isListEmpty(mylist):
+
+		if mylist == []:
+			return False
+		else:
+			return True
+		# raise("Parameter must be LIST")
 
 class utils(object):
 
@@ -94,14 +126,19 @@ class utils(object):
 				   @ext 		: default 'jpg'
 
 			 return: path (if success)
-			 		 Flase[bool] (if false)
+					 Flase[bool] (if false)
 		"""
 
 		path = outputdir + '/' + filename
 
 		if not os.path.exists( outputdir) :
-			print (outputdir + ' : not found.')
-			return
+			logger.warning (outputdir + ' : not found.')
+
+			try :
+				os.mkdir(outputdir)
+			except Exception as e :
+				logger.error(e)
+				return
 
 		import maya.OpenMaya as openMaya
 		import maya.OpenMayaUI as openMayaUI
@@ -112,15 +149,39 @@ class utils(object):
 
 		try:
 			view.readColorBuffer(image, True)
+			image.resize(448,252)
 			image.writeToFile(path, ext)
 
-			print ('Capture success : ' + path )
+			logger.info ('Capture success : ' + path )
 			return path
 		except Exception as e:
-			print ('cannot capture')
+			logger.error ('cannot capture')
+			logger.error(e)
 
 		return False
 
+class redshiftUtils :
+
+	def __init__(self):
+		pass
+
+	def redshiftUpdateActiveAovList(self):
+		""" Update redshift aov list in render setting window
+		"""
+		import maya.mel as mel
+		
+		mel.eval("redshiftUpdateActiveAovList();")
+
+def cleanOldShelf(shelfname):
+	import maya.cmds as cmds
+	
+	if cmds.shelfLayout(shelfname, ex=1):
+		if cmds.shelfLayout(shelfname, q=1, ca=1):
+			for each in cmds.shelfLayout(shelfname, q=1, ca=1):
+				print(each)
+				cmds.deleteUI(each)
+
+		
 if __name__ == '__main__':
 	
 	# Test inputDialog

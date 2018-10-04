@@ -1,4 +1,4 @@
-import os, sys, subprocess, time, json
+import os, sys, subprocess, time, json, shutil
 from functools import partial
 
 try:
@@ -18,25 +18,43 @@ except ImportError:
 
 from ...src import env
 from ...src import utils
-from ...ui  import custom_widget
+from ...src import log
+import custom_widget
+import projectExplorer_utils as explorerUtils
 
-reload(custom_widget)
-reload(utils)
-reload(env)
+# reload(explorerUtils)
+# reload(custom_widget)
+# reload(utils)
+# reload(env)
+# reload(log)
+
+logger = log.logger("projectExplorer")
+logger = logger.getLogger()
 
 import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMayaUI as apiUI
 
 getEnv 	= env.getEnv()
-
 modulepath = getEnv.modulePath()
 
-__APP_version__ = "1.2.1"
-# V1.0 : All function running well.
-# V1.1 : Support pySide2, not list "_thummbnail folder in sequence list"
-# V1.2 : Support multi project switching
-# V1.2.1: BugFix: copy project, shot, sequence template.
+__APP_version__ = '1.5.5'
+# V1.0.0 : All function running well.
+# V1.1.0 : Support pySide2, not list "_thummbnail folder in sequence list"
+# V1.2.0 : Support multi project switching
+# V1.2.1 : BugFix: copy project, shot, sequence template.
+# V1.3.0 : Add preference windows, add command "add asset"
+# V1.4.0 : Save recent opened path in window.
+# v1.4.1 : add action menu
+# v1.4.2 : Bug fix, Maya scene list saw another file type.
+# V1.4.3 : Bug fix, Asset list Exclude system files.
+# V1.5.0 : Insert Logging
+# V1.5.1 : Add ability to Add/Reload SAL_pipeline shelf
+# V1.5.2 : Add update snapshot
+# V1.5.3 : Add comment[load/add]
+# V1.5.4 : [Fix] save increment, ignore *.xgen when count a version.
+# V1.5.5 : change open dialogbox to ['Open', 'No'] instead of ['Yes'. 'No']
+# V1.5.6 : Revert back open confirm dialogbox to simple
 
 #-------------------------------------------------------
 # // make unclickable object clickable.
@@ -88,11 +106,13 @@ def objString(string):
 class salProjectExplorer( QMainWindow ):
 	"""A bare minimum UI class - showing a .ui file inside Maya 2016"""
 
+	commentData = {}
+
 	def __init__(self,parent=None):
 		''' init '''
 		QMainWindow.__init__(self, parent)
 
-		print("##### Project Explorer : Start #####")
+		logger.info("##### Project Explorer : Start #####")
 
 		self._uiFilename_ = 'projectExplorer.ui'
 		self._uiFilePath_ = modulepath + '/ui/' + self._uiFilename_
@@ -101,6 +121,7 @@ class salProjectExplorer( QMainWindow ):
 
 		# Check is ui file exists?
 		if not os.path.isfile( self._uiFilePath_ ):
+			logger.error('File ui not found.')
 			cmds.error( 'File ui not found.' )
 
 		# ---- LoadUI -----
@@ -125,29 +146,31 @@ class salProjectExplorer( QMainWindow ):
 		self.refresh('asset_list')
 		self.refresh('sequence_list')
 
+		self._init_recentUiStep()
+
 		self.ui.show()
 
 	def initUI(self):
 
 		self.setStyleSheet("""
-					        QWidget {
-					            color: white;
-					            font-size: 10pt;
-					            font-family: Tahoma;
-					            }
-					        QListWidget{
-					        	color: white;
-					        	border-color: orange;
-					        }
-					        QTabWidget{
-					        	font-size: 11pt;
-					        	font-weight: bold;
-					        }
-					        QComboBox:hover,QPushButton:hover,QListWidget:focus
-							{
-							    border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
+							QWidget {
+								color: white;
+								font-size: 10pt;
+								font-family: Tahoma;
+								}
+							QListWidget{
+								color: white;
+								border-color: orange;
 							}
-					        """)
+							QTabWidget{
+								font-size: 11pt;
+								font-weight: bold;
+							}
+							QComboBox:hover,QPushButton:hover,QListWidget:focus
+							{
+								border: 2px solid QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
+							}
+							""")
 		self.ui.label_currentpath.setStyleSheet("""font-weight: bold;""")
 		# self.ui.label_path_editable.setStyleSheet("""font-weight: bold;""")
 
@@ -161,6 +184,7 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.pushButton_openExplorer.clicked.connect(self.openExplorer_onclick )
 		self.ui.pushButton_saveIncrement.clicked.connect(self.pushButton_saveIncrement_onclick)
 		self.ui.pushButton_addnewCentralItem.clicked.connect(self.pushButton_addnewCentralItem_onClick)
+		self.ui.label_comment.editingFinished.connect(self.label_comment_editingFinished)
 
 		# Make QLabel object cliackable.
 		clickable(self.ui.label_path_editable).connect( self.openExplorer_onclick )
@@ -168,10 +192,67 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.comboBox_project.currentIndexChanged.connect(self.project_select)
 		self.ui.listWidget_asset.itemSelectionChanged.connect(self.listWidget_asset_itemSelectionChanged)
 		self.ui.listWidget_sequence.itemSelectionChanged.connect(self.listWidget_sequence_itemSelectionChanged)
-		self.ui.listWidget_task.itemClicked.connect(self.listWidget_task_itemSelectionChanged)
+		self.ui.listWidget_task.itemSelectionChanged.connect(self.listWidget_task_itemSelectionChanged)
 		self.ui.tabWidget.currentChanged.connect(self.tabWidget_currentChanged)
-		self.ui.listWidget_object_center.itemClicked.connect(self.listWidget_object_center_itemClicked)
+		self.ui.listWidget_object_center.itemSelectionChanged.connect(self.listWidget_object_center_itemClicked)
 		self.ui.listWidget_version.itemClicked.connect(self.listWidget_version_itemClicked)
+
+		# Menu action
+		self.ui.actionPreference_setting.triggered.connect(self.actionPreference_setting_triggered)
+		self.ui.actionAdd_SAL_shelf.triggered.connect(self.actionAdd_SAL_shelf_triggered)
+		self.ui.actionUpdate_snapshot.triggered.connect(self.actionUpdate_snapshot_triggered)
+
+	def _init_recentUiStep(self):
+		''' 
+			Setup UI from recent opened 
+
+			from structure : 'smallFun|assets|set|ballGround|model'
+		'''
+
+		is_optionVarExists = cmds.optionVar( exists='sal_prjExpl' )
+
+		if is_optionVarExists :
+			recent_UI   	= cmds.optionVar( q ="sal_prjExpl").split('|')
+			recentTabType 	= recent_UI[1] # Type : Shot/ Asset
+			recentSubType	= recent_UI[2] # subtype in asset / sequence in shot
+			recentItemName	= recent_UI[3] # shotname / asset name
+			recentTask 		= recent_UI[4] # Task name
+
+			logger.info("Set recent workspace as : " + cmds.optionVar( q ="sal_prjExpl") )
+
+			try :
+
+				# Type is 'shots'
+				if recentTabType == 'shots':
+					# Set recent tab
+					self.ui.tabWidget.setCurrentIndex(1)
+
+					recentSeq  = recentSubType
+					recentSht  = recentItemName
+
+					# set sequence
+					seqItem = self.ui.listWidget_sequence.findItems(recentSeq, Qt.MatchExactly)
+					if seqItem == [] :
+						return False
+					else : 
+						self.ui.listWidget_sequence.setCurrentItem(seqItem[0])
+
+				elif recentTabType == 'assets' :
+					# Set recent tab
+					self.ui.tabWidget.setCurrentIndex(0)
+
+					recentAsst = recentItemName
+					recentType = recentSubType
+
+					# set Type
+					recentTypeItem = self.ui.listWidget_asset.findItems(recentType, Qt.MatchExactly)
+					if recentTypeItem == [] :
+						return False
+					else : 
+						self.ui.listWidget_asset.setCurrentItem(recentTypeItem[0])
+
+			except Exception as e :
+				logger.warning(e)
 
 	def setup_projectCombobox(self):
 		""" add list of project from config file to combobox """
@@ -190,8 +271,6 @@ class salProjectExplorer( QMainWindow ):
 		getInfo = env.getInfo(projectName = project)
 
 		# Check project is ready to use
-
-
 		activePrj = self.ui.comboBox_project.findText( project )
 		self.ui.comboBox_project.setCurrentIndex(activePrj)
 
@@ -206,6 +285,7 @@ class salProjectExplorer( QMainWindow ):
 
 		if section == 'project':
 			# // list all project
+			self.setup_projectCombobox()
 			result = True
 
 		# // Update task_list
@@ -253,7 +333,7 @@ class salProjectExplorer( QMainWindow ):
 				currentShot		= self.ui.listWidget_object_center.currentItem()
 
 				if not currentShot :
-					print ('return.')
+					logger.info ('return.')
 					return
 
 				shotName 		= self.ui.listWidget_object_center.itemWidget( currentShot ).filename(True)
@@ -270,8 +350,20 @@ class salProjectExplorer( QMainWindow ):
 					self.ui.listWidget_task.addItem(i)
 
 				result = path
-
-			self.ui.listWidget_task.setCurrentRow(0)
+				
+			# Set task as recent task
+			is_optionVarExists = cmds.optionVar( exists='sal_prjExpl' )
+			if is_optionVarExists :
+				recentTask = cmds.optionVar( q ="sal_prjExpl").split('|')[4]
+				taskItem = self.ui.listWidget_task.findItems(recentTask, Qt.MatchExactly)
+				if taskItem == [] :
+					logger.warning("recent taskItem not match : " + recentTask)
+					return False
+				else : 
+					self.ui.listWidget_task.setCurrentItem(taskItem[0])
+					logger.info("set recent task : " + recentTask)
+			else :
+				self.ui.listWidget_task.setCurrentRow(0)
 
 		# // Update asset_list
 		elif section == 'asset_list':
@@ -319,6 +411,10 @@ class salProjectExplorer( QMainWindow ):
 					workspace = '%s/%s'%( path, mytype) 
 					# thumbnail_path  "C:/Users/siras/Pictures/14936969_1362716400413980_313115908_n.jpg"
 
+					# skip type : files
+					if os.path.isfile(workspace):
+						continue;
+
 					thumbnail_path = getInfo.getThumbnail(workspace = workspace, filename = mytype)
 					datemodified   = time.strftime("%d/%m/%Y %H:%M %p",time.gmtime( os.path.getmtime(workspace) ))
 
@@ -337,6 +433,8 @@ class salProjectExplorer( QMainWindow ):
 
 					self.ui.listWidget_object_center.addItem( item )
 					self.ui.listWidget_object_center.setItemWidget( item, item_widget)
+
+					QApplication.processEvents()
 
 			# Tab is shots
 			else:
@@ -398,11 +496,11 @@ class salProjectExplorer( QMainWindow ):
 				path = self.ui.label_path_editable.text()
 
 				if not os.path.exists(path):
-					print ('Path not exists.')
+					logger.warning ('Path not exists : ' + path)
 					return
 
 				# list all dir, ignore 'edits' folder
-				dirList = [i for i in os.listdir(path) if i != 'edits']
+				dirList = [i for i in os.listdir(path) if i != 'edits' and not i.startswith(".") and i.endswith('.ma')]
 
 				for i in dirList:
 					item = QListWidgetItem(i)
@@ -428,11 +526,11 @@ class salProjectExplorer( QMainWindow ):
 				path = '%s/%s/%s/%s/%s'%(getInfo.filmPath,currentSequence,shotName,'scenes',currentTask)
 
 				if not os.path.exists(path):
-					print ('Path not exists.')
+					logger.error ('Path not exists.')
 					return
 
 				# list all dir, ignore 'edits' folder
-				dirList = [i for i in os.listdir(path) if i != 'edits']
+				dirList = [i for i in os.listdir(path) if i != 'edits' and not i.startswith(".") and i.endswith('.ma') ]
 
 				for i in dirList:
 					item = QListWidgetItem(i)
@@ -457,7 +555,7 @@ class salProjectExplorer( QMainWindow ):
 
 		self.refresh('asset_list')
 		self.refresh('sequence_list')
-		self.refresh('version')
+		# self.refresh('version')
 
 		print ("project_select : " + currenttext)
 
@@ -468,7 +566,7 @@ class salProjectExplorer( QMainWindow ):
 		path = getInfo.projectPath + '/production/assets/' + currentItem
 		self.ui.label_path_editable.setText(path)
 		
-		self.refresh('task_list')
+		# self.refresh('task_list')
 
 		# Update current path
 		# self.ui.label_path_editable.setText( path )
@@ -477,7 +575,7 @@ class salProjectExplorer( QMainWindow ):
 		currentItem = self.ui.listWidget_sequence.currentItem().text()
 		
 		self.refresh('center')
-		self.refresh('task_list')
+		# self.refresh('task_list')
 
 		path = "%s/%s"%(getInfo.filmPath, currentItem)
 
@@ -485,7 +583,7 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.label_path_editable.setText( path )
 
 	def listWidget_task_itemSelectionChanged(self):
-		# print 'x'
+		# logger.info 'x'
 
 		currentItem = self.ui.listWidget_task.currentItem().text()
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
@@ -514,7 +612,6 @@ class salProjectExplorer( QMainWindow ):
 		self.ui.label_path_editable.setText( path )
 		self.refresh(section = 'version')
 		
-
 	def listWidget_object_center_itemClicked(self):
 		"""
 			Description
@@ -535,6 +632,9 @@ class salProjectExplorer( QMainWindow ):
 
 		self.ui.label_path_editable.setText(path)
 		self.refresh('task_list')
+
+		# Load comment data 
+		self.commentData = explorerUtils.getComment( workspace =  path )
 
 	def listWidget_version_itemClicked(self):
 
@@ -576,6 +676,15 @@ class salProjectExplorer( QMainWindow ):
 		filename= myGetInfo.get_fileName()
 		artist  = myGetInfo._getUsername_fromPath()
 
+		# PATTERN : raw_data[task][filename] = comment
+		task = myGetInfo.get_task()
+		try :
+			# print (json.dumps(self.commentData, indent = 4))
+			# print ("self.commentData[{task}][{filename}]".format(task = task, filename = filename))
+			comment = self.commentData[task][filename]
+		except KeyError :
+			comment = '...'
+
 		# / set image
 		thumbnail_workSpace = myGetInfo.get_workspace()
 		thumbnail_file 		= myGetInfo.get_fileName(ext=False)+'.jpg'
@@ -586,22 +695,25 @@ class salProjectExplorer( QMainWindow ):
 
 		self.ui.label_ImagePlaceHolder.setPixmap(pixmap)
 
+		# Load comment
+		pass
+
 		# / list information field
 		self.ui.label_fileName.setText( filename )
 		self.ui.label_version.setText ( version )
 		self.ui.label_modDate.setText ( modDate )
 		self.ui.label_aetist.setText  ( artist )
-		self.ui.label_comment.setText ('...')
-		
+		self.ui.label_comment.setText ( comment )
 
 	def tabWidget_currentChanged(self):
 		
+		logger.debug("tabWidget_currentChanged")
 		self.ui.listWidget_object_center.clear()
 		self.refresh('asset_list')
 		self.refresh('sequence_list')
 		self.refresh('center')
-		self.refresh('version')
-		self.refresh('task_list')
+		# self.refresh('version')
+		# self.refresh('task_list')
 
 	def addSequence_pushButton_onClick(self):
 		''' description '''
@@ -623,7 +735,7 @@ class salProjectExplorer( QMainWindow ):
 
 		try:
 			os.mkdir(path)
-			print('Create success.')
+			logger.info('Create success.')
 
 		except Exception as e:
 			raise(e)
@@ -632,6 +744,7 @@ class salProjectExplorer( QMainWindow ):
 		self.refresh('sequence_list')
 
 	def addAsset_pushButton_onClick(self):
+		""" add asset """
 		self.refresh('asset_list')
 
 	def pushButton_open_onClick(self):
@@ -641,7 +754,7 @@ class salProjectExplorer( QMainWindow ):
 
 		# // if not select any file
 		if not self.ui.listWidget_version.currentItem():
-			print ('no file selected.')
+			logger.warning ('no file selected.')
 			return
 
 		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
@@ -655,30 +768,62 @@ class salProjectExplorer( QMainWindow ):
 				result =cmds.confirmDialog(	title 		=  'Save file',
 											message 	=  'File is unsave, Save this file?', 
 											button 		=  ['Yes','No'], 
-											defaultButton= 'Yes', 
+											defaultButton= 'Open', 
 											cancelButton = 'No', 
 											dismissString= 'No' 
 											)
 
-				# When user say 'YES' then Save file
+				# When user say 'Yes' then do nothing.
 				if result == 'Yes':
-					cmds.SaveScene()
-				else:
-					# return False
-					pass
+					return
 
 			# Flush scene
 			cmds.file( new = True, force = True ) 
 			# Open mayafile
-			print ('Opening file : ' + filePath)
+			logger.info ('Opening file : ' + filePath)
 			try:
 				cmds.file(filePath, o=True)
 				workspace = workspace = '/'.join( filePath.split('/')[:-3] )
-				print ('setup workspace : ' + workspace)
+				logger.info ('setup workspace : ' + workspace)
 				mel.eval( 'setProject "'+ workspace +'";')
 
 			except Exception as e:
 				raise e
+
+			# save optionVar
+			currentPrjt = currentproject = self.ui.comboBox_project.currentText()
+			currentType = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+			currentcenterItem	= self.ui.listWidget_object_center.currentItem()
+			currentTask = self.ui.listWidget_task.currentItem().text()
+
+			if currentType == 'shots':
+				currentSeq 		= self.ui.listWidget_sequence.currentItem().text()
+				shotName 		= self.ui.listWidget_object_center.itemWidget( currentcenterItem ).filename(True)
+				current_Step 	= "{0}|{1}|{2}|{3}|{4}".format( currentPrjt, currentType, currentSeq, shotName, currentTask )
+
+			else :
+				currentAssets 	= self.ui.listWidget_asset.currentItem().text()
+				currentSubType 	= self.ui.listWidget_object_center.itemWidget( currentcenterItem ).filename(True)
+				current_Step 	= "{0}|{1}|{2}|{3}|{4}".format( currentPrjt, currentType, currentAssets, currentSubType, currentTask )
+
+			cmds.optionVar( sv = ["sal_prjExpl", current_Step])
+
+	def label_comment_editingFinished(self):
+		''' Finished edit update comment '''
+
+		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
+		comment  = self.ui.label_comment.text()
+
+		info = env.getInfo(path = filepath)
+
+		# Save comment
+		try :
+			explorerUtils.saveComment( filename = filepath, comment = comment )
+			logger.info("Save comment : " + comment)
+		except Exception as e :
+			logger.error("Cannot save comment : " + str(e))
+
+		self.commentData = explorerUtils.getComment( workspace =  info.get_workspace() )
 
 	def openExplorer_onclick(self):
 		'''
@@ -688,30 +833,15 @@ class salProjectExplorer( QMainWindow ):
 		if os.path.exists( path ):
 			openExplorer(path)
 		else :
-			cmds.error('Path not found')
+			_msg = 'Path not found'
+			cmds.error( _msg )
+			logger.error( _msg )
 
 	def pushButton_saveIncrement_onclick(self):
 
-		# # When file have some change
-		# if cmds.file(q=True, modified=True) :
-
-		# 	result =cmds.confirmDialog(	title 		=  'Save file',
-		# 								message 	=  'File is unsave, Save this file?', 
-		# 								button 		=  ['Yes','No'], 
-		# 								defaultButton= 'Yes', 
-		# 								cancelButton = 'No', 
-		# 								dismissString= 'No' 
-		# 								)
-
-		# 	# When user say 'YES' then Save file
-		# 	if result == 'Yes':
-		# 		cmds.SaveScene()
-		# 	else:
-		# 		# return False
-		# 		pass
-
 		currentPath = self.ui.label_path_editable.text()
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+		comment = self.ui.lineEdit_comment.text()
 
 		sequence 	= self.ui.listWidget_sequence.currentItem()
 		currentShot	= self.ui.listWidget_object_center.currentItem()
@@ -735,7 +865,7 @@ class salProjectExplorer( QMainWindow ):
 			if tabText == 'shots':
 			
 				# Create next version
-				lastfilename = [ file for file in os.listdir( currentPath ) if os.path.isfile( currentPath +'/' + file ) ][-1]
+				lastfilename = [ file for file in os.listdir( currentPath ) if os.path.isfile( currentPath +'/' + file ) and not file.endswith('.xgen') ][-1]
 				
 				workType 	= 'film'
 				sequence 	= sequence.text()
@@ -753,7 +883,7 @@ class salProjectExplorer( QMainWindow ):
 			else :
 
 				# Create next version
-				lastfilename = [ file for file in os.listdir( currentPath ) if os.path.isfile( currentPath +'/' + file ) ][-1]
+				lastfilename = [ file for file in os.listdir( currentPath ) if os.path.isfile( currentPath +'/' + file ) and not file.endswith('.xgen') ][-1]
 				
 				workType  	= 'assets'
 				assetType 	= currentSubType.text()
@@ -799,18 +929,32 @@ class salProjectExplorer( QMainWindow ):
 		try:
 
 			# Save new version
-			cmds.file( rename='%s/%s'%( currentPath, filename ) )
+			filepath = '%s/%s'%( currentPath, filename )
+			cmds.file( rename = filepath )
 			result =  cmds.file( save=True, type='mayaAscii' )
 			workspace = '/'.join( currentPath.split('/')[:-2] )
 
-			if workspace != '':
-				print (str(workspace))
+			logger.info("Increment save : " + filepath )
 
-				print ('setup workspace : ' + workspace)
+			# Save comment
+			try :
+				explorerUtils.saveComment( filename = filepath, comment = comment )
+				logger.info("Save comment : " + comment)
+
+				self.commentData = explorerUtils.getComment( workspace =  workspace )
+				self.ui.lineEdit_comment.clear()
+
+			except Exception as e :
+				logger.error("Cannot save comment : " + str(e))
+
+
+			if workspace != '':
+				logger.info ('setup workspace : ' + workspace)
 				cmd =  'setProject "'+ workspace +'";'
 				mel.eval( cmd )
 
 		except Exception as e:
+			logger.error( 'Increment save not success : ' + '%s/%s'%( currentPath, filename ) )
 			raise (e)
 
 		# // capture view port
@@ -818,19 +962,39 @@ class salProjectExplorer( QMainWindow ):
 		thumbnail_path = workspace + '/_thumbnail'
 		if not os.path.exists(thumbnail_path):
 			os.mkdir(thumbnail_path)
+			logger.info("Create dir : " + thumbnail_path)
 
 		try:
 			utils.utils().captureViewport( outputdir = thumbnail_path, filename = thumbnail_file )
+			logger.debug("Capture viewport : " + thumbnail_path +'/' + thumbnail_file )
 
 		except Exception as e:
-			print (e)
-			print ('Capture viewport not success.')
+			logger.error ('Capture viewport not success.')
+			logger.error (e)
 
 		# // return result
 
 		if result :
 			refresh_result = self.refresh('version')
-			# print result
+			# logger.info result
+
+		# Setup Option var
+		currentPrjt = currentproject = self.ui.comboBox_project.currentText()
+		currentType = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
+		currentcenterItem	= self.ui.listWidget_object_center.currentItem()
+		currentTask = self.ui.listWidget_task.currentItem().text()
+		
+		if currentType == 'shots':
+			currentSeq 		= self.ui.listWidget_sequence.currentItem().text()
+			shotName 		= self.ui.listWidget_object_center.itemWidget( currentcenterItem ).filename(True)
+			current_Step 	= "{0}|{1}|{2}|{3}|{4}".format( currentPrjt, currentType, currentSeq, shotName, currentTask )
+
+		else :
+			currentAssets 	= self.ui.listWidget_asset.currentItem().text()
+			currentSubType 	= self.ui.listWidget_object_center.itemWidget( currentcenterItem ).filename(True)
+			current_Step 	= "{0}|{1}|{2}|{3}|{4}".format( currentPrjt, currentType, currentAssets, currentSubType, currentTask )
+
+		cmds.optionVar( sv = ["sal_prjExpl", current_Step])
 
 	def addTask_pushButton_onClick(self):
 		'''
@@ -848,7 +1012,7 @@ class salProjectExplorer( QMainWindow ):
 				return
 
 			else:
-				currentSubType = sequcurrentSubTypeence.text()
+				currentSubType = currentSubType.text()
 				currentAssets  = currentAssets.text()
 
 			# Description
@@ -879,7 +1043,7 @@ class salProjectExplorer( QMainWindow ):
 
 			# 	# Description
 			# 	utils.utils().unzip(zipPath = getEnv.assetTemplate_zipPath() ,dest = path)
-			# 	print('Create new sequence success : ' + path)
+			# 	logger.info('Create new sequence success : ' + path)
 
 			# except Exception as e:
 			# 	raise(e)
@@ -923,7 +1087,7 @@ class salProjectExplorer( QMainWindow ):
 
 			# 	# Description
 			# 	utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
-			# 	print('Create new sequence success : ' + path)
+			# 	logger.info('Create new sequence success : ' + path)
 
 			# except Exception as e:
 			# 	raise(e)
@@ -936,18 +1100,18 @@ class salProjectExplorer( QMainWindow ):
 			- Create new task in assets mode
 		'''
 
-		# print ('Onclicked')
+		# logger.info ('Onclicked')
 		tabText = self.ui.tabWidget.tabText( self.ui.tabWidget.currentIndex() )
 		
 		# When working on assets
 		if tabText == 'assets':
 
-			# print ('tabText : ' + tabText)
+			# logger.info ('tabText : ' + tabText)
 
 			currentSubType = self.ui.listWidget_asset.currentItem()
 			
 			if not currentSubType  :
-				print ('Return.')
+				logger.info ('Return.')
 				return
 
 			else:
@@ -965,7 +1129,7 @@ class salProjectExplorer( QMainWindow ):
 			# path = getInfo.assetPath + '/' + currentSubType + '/' + currentAssets + '/scenes/' + result
 			path = '%s/%s/%s'%( assetPath, currentSubType, newAssetname)
 
-			print (path + ' : ' + str(os.path.exists(path)))
+			logger.info (path + ' : ' + str(os.path.exists(path)))
 
 			# when folder exists, Loop until not duplicate
 			while os.path.exists(path):
@@ -981,22 +1145,23 @@ class salProjectExplorer( QMainWindow ):
 				os.mkdir(path)
 
 				utils.utils().unzip(zipPath = getEnv.assetTemplate_zipPath() ,dest = path)
-				print('Create new sequence success : ' + path)
+				logger.info('Create new sequence success : ' + path)
 
 			except WindowsError as e:
+				logger.error(e)
 				raise(e)
 
 		# When working on shot		
 		else:
 
-			# print ('tabText : ' + tabText)
+			# logger.info ('tabText : ' + tabText)
 
 			sequence 	= self.ui.listWidget_sequence.currentItem()
 			# currentShot	= self.ui.listWidget_object_center.currentItem()
 			# shotName 	= self.ui.listWidget_object_center.itemWidget( currentShot )
 
 			if not sequence :
-				print ("return.")
+				logger.info ("return.")
 				return
 			else:
 				sequence = sequence.text()
@@ -1024,12 +1189,53 @@ class salProjectExplorer( QMainWindow ):
 				os.mkdir(path)
 
 				utils.utils().unzip(zipPath = getEnv.shotTemplate_zipPath() ,dest = path)
-				print('Create new sequence success : ' + path)
+				logger.info('Create new sequence success : ' + path)
 
 			except WindowsError as e:
+				logger.error(e)
 				raise(e)
 
 		self.refresh('center')
+
+	def actionUpdate_snapshot_triggered(self):
+		''' update current snapshot '''
+
+		filePath = self.ui.listWidget_version.currentItem().data( Qt.UserRole ).getString()
+		shotinfo = env.getInfo(path = filePath)
+
+		thumbnail_path = shotinfo.get_workspace() + '/_thumbnail'
+		thumbnail_file = shotinfo.get_fileName(ext=False)+'.jpg'
+
+		print ("Update snapshot : " + os.path.join(thumbnail_path,thumbnail_file))
+
+		utils.utils().captureViewport( outputdir = thumbnail_path, filename = thumbnail_file )
+
+	def actionPreference_setting_triggered(self):
+		""" open project setting window """
+		def clearPrefUI():
+			if cmds.window('SAL_global_preference_window', exists=True):
+				cmds.deleteUI('SAL_global_preference_window')
+				clearPrefUI()
+
+		clearPrefUI()
+
+		from ..globalPreference import Global_preference
+		prefWin = Global_preference.sal_globalPreference(self)
+
+	def actionAdd_SAL_shelf_triggered(self):
+		''' add/reload SAL pipeline shelf to shelf '''
+
+		# myenv = env.getEnv()
+		shelfname = "SAL_pipeline"	
+		utils.cleanOldShelf(shelfname)
+
+		# cmds.shelfLayout(shelfname, p="ShelfLayout")
+		shelfPath = getEnv.pref_dirPath() + "/shelves/shelf_SAL_pipeline.mel"	
+		mel.eval("source \"" + shelfPath + "\"")
+		mel.eval("shelf_SAL_pipeline()")	
+
+		print (shelfname)
+		cmds.setParent(shelfname)	
 
 
 #####################################################################
@@ -1044,7 +1250,7 @@ def getMayaWindow():
 		return shiboken.wrapInstance(long(ptr), QWidget)
 
 def clearUI():
-	if cmds.window('sal_projectExplorer',exists=True):
+	if cmds.window('sal_projectExplorer', exists=True):
 		cmds.deleteUI('sal_projectExplorer')
 		clearUI()
 

@@ -1,0 +1,86 @@
+{
+    "turntable": {
+        "path": "P:/smf_project/post_production/output/render/Turntable"
+    },
+    "shot": {
+        "path": "P:/smf_project/post_production/output/render/"
+    },
+    "aov": {
+        "aov_list": [
+            "Ambient Occlusion",
+            "Background",
+            "Bump Normals",
+            "Caustics Raw",
+            "Caustics",
+            "Depth",
+            "Diffuse Filter",
+            "Diffuse Lighting Raw",
+            "Diffuse Lighting",
+            "Emission",
+            "Global Illumination Raw",
+            "Global Illumination",
+            "Matte",
+            "Motion Vectors",
+            "Normals",
+            "ObjectID",
+            "Object-Space Bump Normals",
+            "Object-Space Positions",
+            "Puzzle Matte",
+            "Reflections Filter",
+            "Reflections Raw",
+            "Reflections",
+            "Refractions Filter",
+            "Refractions Raw",
+            "Refractions",
+            "Shadows",
+            "Specular Lighting",
+            "Sub Surface Scatter Raw",
+            "Sub Surface Scatter",
+            "Total Diffuse Lighting Raw",
+            "Total Translucency Lighting Raw",
+            "Translucency Filter",
+            "Translucency GI Raw",
+            "Translucency Lighting Raw",
+            "Volume Fog Emission",
+            "Volume Fog Tint",
+            "Volume Lighting",
+            "World Position"
+        ],
+        "preset": {
+            "0_basic": [
+                "Diffuse Filter",
+                "Diffuse Lighting",
+                "Ambient Occlusion",
+                "Diffuse Lighting Raw",
+                "Caustics Raw",
+                "Caustics",
+                "Emission",
+                "Total Diffuse Lighting Raw",
+                "Global Illumination Raw",
+                "Global Illumination",
+                "Reflections Filter",
+                "Reflections Raw",
+                "Refractions Filter",
+                "Refractions Raw",
+                "Bump Normals",
+                "Normals",
+                "Specular Lighting",
+                "Sub Surface Scatter Raw",
+                "Sub Surface Scatter",
+                "Motion Vectors",
+                "Volume Lighting",
+                "Translucency Filter",
+                "Translucency Lighting Raw",
+                "Shadows"
+            ],
+            "1_technical": [
+                "Depth",
+                "Motion Vectors",
+                "Normals",
+                "World Position"
+            ],
+            "2_setB": [],
+            "3_setC": []
+        }
+    }
+}

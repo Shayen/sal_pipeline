@@ -1,4 +1,4 @@
-import sys, os, logging
+import sys, os
 
 from sal_pipeline.src import env
 reload(env)
@@ -9,32 +9,6 @@ modulePath = env.modulePath()
 
 if modulePath not in sys.path :
 	sys.path.append( modulePath )
-
-# from sal_pipeline.src import projectExplorer
-
-
-##################### LOGGER #####################
-# import datetime
-
-# logger = logging.getLogger(__name__)
-# logger.setLevel(logging.INFO)
-
-# logFileName = str (datetime.date.today() )
-
-# # create a file handler
-# handler = logging.FileHandler( modulePath + '/sal_pipeline/log/' + logFileName + '.log' )
-# handler.setLevel(logging.INFO)
-
-# # create a logging format
-# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# handler.setFormatter(formatter)
-
-# # add the handlers to the logger
-# logger.addHandler(handler)
-
-# logger.info('Hello baby')
-
-#################################################
 
 def app_projectExplorer():
 	''' run project explorer '''
@@ -53,10 +27,38 @@ def app_mayaGlobalPublisher():
 	globalPublisher.run()
 
 def app_assetImporter():
-	# from sal_pipeline.app import assetImporter
-	# reload(assetImporter)
-	# assetImporter.run()
-	pass
+	from sal_pipeline.app import assetImporter
+	reload(assetImporter)
+	assetImporter.run()
+
+def app_redshiftMultiMatte():
+	from sal_pipeline.app.RS_MultimatteTool import rsMM_app
+	reload(rsMM_app)
+
+def app_FileTextureManager():
+	import maya.mel as mel
+
+	app_path = env.app_dirPath() + '/FileTextureManager.mel'
+	print app_path
+	mel.eval("source \"{0}\";".format(app_path))
+	mel.eval("FileTextureManager;")
+
+def app_mergePlace2TextureNode():
+	from sal_pipeline.app import merge_place2DTexture
+	reload(merge_place2DTexture)
+	merge_place2DTexture.main()
+
+def app_replaceReference():
+	from sal_pipeline.app import massRefReplace_app
+	reload(massRefReplace_app)
+	app = massRefReplace_app.massRefRlps_UI()
+	app.showUI()
+
+def app_renderLayerManager():
+	from sal_pipeline.app import RenderlayerManager_app
+	reload(RenderlayerManager_app)
+	app = RenderlayerManager_app.renderLayerMan_UI()
+	app.showUI()
 
 if __name__ == '__main__':
 	app_projectExplorer()

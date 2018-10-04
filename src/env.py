@@ -1,8 +1,9 @@
-import os, sys, json, socket
-import maya.cmds as cmds
-import maya.mel as mel
+import os, sys, json, socket, shutil, logging
+# import maya.mel as mel
 
 modulePath = '/'.join( os.path.dirname( os.path.abspath(__file__) ).split('\\')[:-1] )
+
+logger = logging.getLogger()
 
 class getEnv(object):
 
@@ -57,6 +58,15 @@ class getEnv(object):
 	def log_dirPath(self):
 		return self._modulePath_ + '/log'
 
+	def app_dirPath(self):
+		return self._modulePath_ + '/app'
+
+	def config_dirPath(self):
+		return self._modulePath_ + '/config'
+
+	def pref_dirPath(self):
+		return self._modulePath_ + '/prefs'
+
 	def shotTemplate_zipPath(self):
 		return self.data_dirPath() + '/' + self.shotTemplateFileName
 
@@ -69,10 +79,71 @@ class getEnv(object):
 	def configure_filePath(self):
 		return self.data_dirPath() + '/' + self.configureFileName
 
+	def maya_userPrefDir(self):
+		''' Get maya prefs path '''
+		try:
+			import maya.cmds as cmds
+		except ImportError:
+			raise("Use in maya ONLY")
+		return cmds.internalVar(userPrefDir=True)
+
+	def update_config(self, data):
+		"""
+			update config data to configure.json file 
+
+			Var : @data : config data (json)
+		"""
+		
+		try :
+			# Dump data to config file
+			json.dump( data , open( self.configure_filePath(), 'w') )
+
+			# Replace Variable
+			self.globalConfig_data = data
+
+		except Exception as e:
+			print(e)
+
+	def get_appConfig(self, configName):
+		""" Read Json config from 'config' directory 
+		
+			Var : configName > config file name.
+		"""	
+		config_path = os.path.join(self.config_dirPath(), configName+".json")
+
+		# If file not found
+		if not os.path.exists(config_path):
+			raise IOError("File not fould : " + config_path )
+
+		# Read data
+		f = open(config_path,'r')
+		data = f.read()
+		f.close()
+		
+		return json.loads(data)
+		
 	def _read_globalConfig(self):
 		""" read config data from './configure.json' """
-		data = json.load( open( self.configure_filePath(), 'r') )
-		return data
+		try:
+			data = json.load( open( self.configure_filePath(), 'r') )
+			return data
+		except IOError:
+			#  configure_default.json
+			src = self.data_dirPath() + '/configure_default.json'
+			dst = self.data_dirPath() + '/configure.json'
+			shutil.copy2(src, dst)
+
+			if os.path.exists(dst):
+				from app.globalPreference import Global_preference as global_pref
+				
+				app  = QApplication(sys.argv) 
+				form = global_pref.sal_globalPreference()
+				app.exec_()
+			else:
+				print ("Cannot open config file : " + dst )
+				return {}
+
+			raise("please restart tool.")
 
 	def _get_Username(self):
 		'''
@@ -107,6 +178,7 @@ class getInfo(object):
 			self.filename = path.split('/')[-1]
 			# self.user = self._getUsername_fromPath()
 		else:
+			import maya.cmds as cmds
 			self.path 	  = cmds.file( q=True, sn=True )
 			self.filename = cmds.file( q=True, sn=True, shn=True )
 			# self.user = self.getUsername()
@@ -130,7 +202,7 @@ class getInfo(object):
 		# // Will set in function 'set_projectConfigFilePath'
 		self.projectConfigFilePath = ''
 
-		# self.type = self.isType()
+		# self.isType() = self.isType()
 		self.asset 	= 'assets'
 		self.shot 	= 'shot'
 
@@ -147,7 +219,7 @@ class getInfo(object):
 			if self.globalConfigureData['setting']['projects'][projectName]['project_code'] == project_code:
 				break 
 
-		print ("Get project name from path : %s"%projectName)
+		# print ("Get project name from path : %s"%projectName)
 		return projectName
 
 	def getUsername(self):
@@ -221,6 +293,11 @@ class getInfo(object):
 
 		return path
 
+	def get_texturePath(self):
+		'''return texture path from given workspace'''
+		workspace_path 	= self.get_workspace()
+		return( workspace_path + '/texture' )
+
 	def isType(self):
 		'''
 			return type of scene : assets / shot
@@ -233,7 +310,7 @@ class getInfo(object):
 		# else : 
 		# 	myType = 'assets'
 
-		self.type = myType
+		# self.type() = myType
 		return myType
 
 	def _getAssetType(self):
@@ -274,7 +351,7 @@ class getInfo(object):
 
 	def get_lastFileVersion(self):
 		''' description '''
-		if self.type == self.shot:
+		if self.isType() == self.shot:
 			path = '%s/%s/%s/%s/%s/%s/%s'%(	self.projectPath 	, 
 											'production'		, 
 											'film'				, 
@@ -284,10 +361,10 @@ class getInfo(object):
 											self.get_task() 
 											)
 
-			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) and file.endswith('.ma') ]
 			return allfile[-1]
 
-		elif self.type == self.asset:
+		elif self.isType() == self.asset:
 			path = '%s/%s/%s/%s/%s/%s/%s'%(	self.projectPath 	, 
 											'production'		, 
 											'assets'			, 
@@ -298,15 +375,16 @@ class getInfo(object):
 											)
 			print path
 
-			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+			allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) and file.endswith('.ma') ]
 			return allfile[-1]
 
 		else:
-			cmds.error('Type not match : ' + self.type)
+			logger.error('Type not match : ' + self.isType())
 
 	def get_nextVersion(self, filename=False):
 
 		lastfilename = self.get_lastFileVersion()
+		print lastfilename
 		version = lastfilename.split('_')[-2]
 		version = int ( version.replace('v','') )
 		result 	=  version + 1
@@ -314,7 +392,7 @@ class getInfo(object):
 		if filename :
 			version = 'v%03d'%(result)
 
-			if self.type == self.shot:
+			if self.isType() == self.shot:
 				result = '_'.join( [ self.projectCode, self.get_sequence(), self.get_shot(), self.get_task(), version, self.get_user()+'.ma' ] )
 			else :
 				result = '_'.join( [ self.projectCode, self._getAssetType(), self.get_name(), self.get_task(), version, self.get_user()+'.ma' ] )
@@ -332,14 +410,15 @@ class getInfo(object):
 
 		sub_path = self.splitPath_data
 
-		if self.type == self.asset :
+		if self.isType() == self.asset :
 			name = sub_path[3]
 
-		elif self.type == self.shot :
+		elif self.isType() == self.shot :
 			name = sub_path[3]
 
 		else:
-			cmds.error('type not found : ' + self.type)
+			name = None
+			logger.error('type not found : ' + self.isType())
 
 		return name
 
@@ -347,22 +426,22 @@ class getInfo(object):
 		'''
 			return : sq10
 		'''
-		if self.type == self.shot:
+		if self.isType() == self.shot:
 			return self.splitPath_data[2]
 
 		else:
-			cmds.warning('type is not shot : ' + self.type)
+			logger.warning('type is not shot : ' + self.isType())
 			return False
 
 	def get_shot(self):
 		'''
 			return : sh100
 		'''
-		if self.type == self.shot:
+		if self.isType() == self.shot:
 			return self.splitPath_data[3]
 
 		else:
-			cmds.warning('type is not shot : ' + self.type)
+			logger.warning('type is not shot : ' + self.isType())
 			return False
 
 	def getThumbnail(self, workspace, filename, perfile=False):
@@ -372,27 +451,25 @@ class getInfo(object):
 		# return thumbnail_path
 
 		thumbnail_path = '%s/%s'%(workspace, '_thumbnail')
+		missThumbnail_path  = self.env.data_dirPath() + '/thumbnail_miss.jpg'
 
 		# // check _thumbnail path exists
 		if not os.path.exists(thumbnail_path):
 			# print (thumbnail_path + ' : not exists')
-			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
-			return thumbnail_path
+			return missThumbnail_path
 
 		# // check number of image file
 		all_thumbnail_files = os.listdir( '%s/%s'%( workspace, '_thumbnail') )
 		if all_thumbnail_files == []:
 			# print ( 'not have thumbnail file : ' + str(all_thumbnail_files))
-			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
-			return thumbnail_path
+			return missThumbnail_path
 
 		else:
 			if perfile:
 				if os.path.exists(thumbnail_path+'/'+filename):
 					thumbnail_path = thumbnail_path+'/'+filename
 				else:
-					thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
-					return thumbnail_path
+					return missThumbnail_path
 			else:
 				thumbnail_file = sorted( all_thumbnail_files )[-1] 
 				thumbnail_path += '/%s'%(thumbnail_file)
@@ -400,10 +477,205 @@ class getInfo(object):
 		# print ('>> : ' + thumbnail_path)
 		if not os.path.exists( thumbnail_path ) :
 			print (thumbnail_path + ' : not exists')
-			thumbnail_path = self.get_ProjectPath() + '/thumbnail_miss.jpg'
+			thumbnail_path = missThumbnail_path
 
 		return thumbnail_path
 
+
+class nuke_info(object):
+
+	def __init__(self,projectName=None,path=None):
+		import nuke
+		self.nuke = nuke
+
+		self.env = getEnv()
+		self.globalConfigureData = self.env.globalConfig_data
+
+		# // When input path
+		if path:
+			self.path     = path
+			self.filename = path.split('/')[-1]
+			# self.user = self._getUsername_fromPath()
+		else:
+			self.path 	  = self._getCurrentscriptPath()
+			self.filename = self.scriptName()
+			# self.user = self.getUsername()
+
+		# // when project name was set
+		if projectName:
+			self.projectName = projectName
+		else :
+			# split from file path
+			self.projectName = self._get_projectNameFromPath()
+
+		self.user = self.env.user
+		self.task = 'comp'
+		
+		self.projectPath = self.globalConfigureData['setting']['projects'][self.projectName]['project_path']
+		self.projectCode = self.globalConfigureData['setting']['projects'][self.projectName]['project_code']
+
+		self.postProductionPath = self.projectPath + '/post_production'
+		self.renderPath 		= self.postProductionPath + '/output/compOut'
+		self.nukeScriptsPath 	= self.postProductionPath + '/composite/nukeScripts'
+		self.footagePath 		= self.postProductionPath + '/footage'
+
+		# // Will set in function 'set_projectConfigFilePath'
+		self.projectConfigFilePath = ''
+
+		self.splitPath_data = self.splitPath()
+
+	def _getCurrentscriptPath(self):
+		'''get current NukeScript path'''
+		return self.nuke.root().knob('name').value()
+
+	def scriptName(self):
+		'''
+		get current script name
+
+		out : "ppl_ep_q0030_s0010_comp_v002_ob.nk"
+		'''
+
+		return self.path.split('/')[-1]
+
+	def _get_projectNameFromPath(self):
+		""" get full name of project"""
+
+		filename 	= self.filename
+		project_code= filename.split('_')[0]
+
+		# get full project name from project code
+		for projectName in self.globalConfigureData['setting']['projects'].keys():
+			if self.globalConfigureData['setting']['projects'][projectName]['project_code'] == project_code:
+				break 
+
+		# self.nuke.tprint ("Get project name from path : %s"%projectName)
+		return projectName
+
+	def getUsername(self):
+		'''
+			setup username
+			> Query computername to compare with config file
+		'''
+
+		# // Get computername
+		computerName = socket.gethostname()
+
+		# // compare with configuration file
+		if computerName in self.globalConfigureData['username'].keys():
+			username = self.globalConfigureData['username'][computerName]
+
+		# // if not math any name.
+		else :
+			username = 'Guest'
+		
+		return username
+
+	def _getUsername_fromPath(self):
+		""" """
+		path = self.filename
+		username = path.split('_')[-1].split('.')[0]
+		return username
+
+	def splitPath (self):
+		data = self.path.split( '/')[-1].split('_')
+
+		return data
+
+	def set_projectConfigFilePath(self, projectPath):
+		''' 
+			set Project config file path ...
+
+			@projectPath : path of current project
+			return : path of project config file
+		'''
+		
+		filename = 'config.con'
+		filepath = projectPath + '/' + filename
+		
+		if not os.path.exists( projectPath ):
+			self.nuke.tprint ('Project config file not found.')
+			return
+
+		self.projectConfigFilePath = filepath
+		return filepath
+
+	def get_ProjectPath(self):
+		return self.projectPath
+
+	def get_ProjectName(self):
+		return self.projectName
+
+	def get_projectCode(self):
+		return self.projectCode
+
+	def get_path(self):
+		''' 
+			Return full path of file
+		'''
+		return self.path
+
+	def get_fileName(self, ext=True):
+		'''
+			return : ppl_sq10_sh100_comp_v003_nook.nk
+		'''
+
+		if ext :
+			return self.filename
+
+		else:
+			base = os.path.basename( self.filename )
+			filename = os.path.splitext( base )[0]
+			return filename
+
+	def get_task(self):
+		return self.task
+
+	def get_version(self):
+		version = self.filename.split('_')[-2]
+		version = int ( version.replace('v','') )
+		return version
+
+	def get_lastFileVersion(self):
+		''' description '''
+
+		path = '%s/%s_%s'%(	self.nukeScriptsPath, 
+							self.get_sequence()	, 
+							self.get_shot()		
+							)
+
+		allfile = [ file for file in os.listdir( path ) if os.path.isfile( path +'/' + file ) ]
+		return allfile[-1]
+
+	def get_nextVersion(self, filename=False):
+
+		self.splitPath()
+
+		lastfilename = self.get_lastFileVersion()
+		version = lastfilename.split('_')[-2]
+		version = int ( version.replace('v','') )
+		result 	=  version + 1
+
+		if filename :
+			version = 'v%03d'%(result)
+			result  = '_'.join( [ self.projectCode, self.get_name(), self.get_task(), version, self.get_user()+'.nk' ] )
+
+		return result
+
+	def get_user(self):
+		user = self.user
+		return user
+
+	def get_sequence(self):
+		'''
+			return : sq10
+		'''
+		return self.splitPath_data[1]
+
+	def get_shot(self):
+		'''
+			return : sh100
+		'''
+		return self.splitPath_data[2]
 
 def showEnvVar():
 	'''

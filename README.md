@@ -3,8 +3,9 @@ VFX Pipeline toolset for Graduate project in 2017 : Visual effects, Digital art,
 
 ### to do [WIP] :
 - [x] Project Explorer
-- [ ] Asset importer (wip)
-- [ ] Global Publisher
+- [x] Global preference editor
+- [x] Asset importer
+- [x] Global Publisher
 - [ ] scene archive tool
 - [ ] Connect pipeline to Project manager platform (Shotgun, TACTIC)
 
@@ -13,8 +14,9 @@ VFX Pipeline toolset for Graduate project in 2017 : Visual effects, Digital art,
 2) Copy prefs folder to ```Documents\maya\2016\prefs```
 3) Open Maya then load sal_pipeline shelf.
 4) Add `SAL_MODULE_PATH` to `Maya.env` 
-
 ```SAL_MODULE_PATH = Path:/To/sal_pipeline_repo```
+7) Create you project folder.
+6) Run `global_Preference_app.py` to setup your project setting.
 
 ## Configuration
 

@@ -1,2 +1,9 @@
+/data
+/configure.json
+
 *.pyc
+
 /log
+/prefs/icons/Thumbs.db
+/sal_pipeline.sublime-project
+/sal_pipeline.sublime-workspace
