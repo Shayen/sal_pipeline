@@ -1,13 +1,11 @@
 ## sal_pipeline
 VFX Pipeline toolset for Graduate project in 2017 : Visual effects, Digital art, Rangsit University
 
-### to do [WIP] :
+### to do [Completed] :
 - [x] Project Explorer
 - [x] Global preference editor
 - [x] Asset importer
 - [x] Global Publisher
-- [ ] scene archive tool
-- [ ] Connect pipeline to Project manager platform (Shotgun, TACTIC)
 
 ## Usage
 1) Install this repository in your computer.
@@ -30,20 +28,20 @@ I use computer name to mapped with username.
 
 ```JSON
 {
-	"setting": {
-		"projects" : {
-			"_Project_name_":{
-				"project_path": "Path:/to/your/project_Directory",
-				"project_code": "_project_code_",
-				"project_name": "_project_fullname_",
-				"active" : true
-			}
-		}
-	},
-	"username" :{
-		"Computername1": "crew_name1",
-		"Computername2": "crew_name2"
-	}
+    "setting": {
+        "projects" : {
+            "_Project_name_":{
+                "project_path": "Path:/to/your/project_Directory",
+                "project_code": "_project_code_",
+                "project_name": "_project_fullname_",
+                "active" : true
+            }
+        }
+    },
+    "username" :{
+        "Computername1": "crew_name1",
+        "Computername2": "crew_name2"
+    }
 }
 ```
 
