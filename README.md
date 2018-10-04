@@ -20,7 +20,11 @@ VFX Pipeline toolset for Graduate project in 2017 : Visual effects, Digital art,
 
 ## Configuration
 
-rename file `configure_default.json` to `configure.json` and setup your project configuration.
+#### Auto Setup
+After deployment just run ```./global_Preference_app.py``` using any python interpreter and Add you project and team members.
+    
+#### Manual setup
+rename file `./data/configure_default.json` to `./data/configure.json` and setup your project configuration.
 
 I use computer name to mapped with username.
 
@@ -43,3 +47,20 @@ I use computer name to mapped with username.
 }
 ```
 
+
+## Overall Preview
+#### Project Explorer
+![ProjectExplorer](images/projectExplorer.gif)
+
+#### Global publish tool
+![Global publish tool](images/global_publish.gif)
+
+#### Asset Importer tool
+![Asset Importer tool](images/asset_importer.gif)
+![Asset Importer tool](images/flctrum.gif)
+
+#### Maya Scene assembly controller
+![Maya Scene assembly controller](images/asmController.gif)
+
+#### Render setting tool
+![render setting](rendersetting.gif)
